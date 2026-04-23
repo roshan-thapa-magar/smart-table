@@ -17,6 +17,8 @@ import {
   List,
   ChartBarIncreasing,
   UserStar,
+  BetweenVerticalStart,
+  Section,
 } from "lucide-react";
 
 import {
@@ -79,7 +81,7 @@ export function AppSidebar() {
                 </SidebarMenuButton>
               </SidebarMenuItem>
 
-              {/* Table Management */}
+              {/* User Management */}
               <Collapsible className="group/collapsible">
                 <SidebarMenuItem>
                   <CollapsibleTrigger asChild>
@@ -130,7 +132,7 @@ export function AppSidebar() {
                       <SidebarMenuSubItem>
                         <SidebarMenuSubButton asChild>
                           <Link href="/tables/departments">
-                            <TrendingUp />
+                            <Section />
                             <span>Department</span>
                           </Link>
                         </SidebarMenuSubButton>
@@ -139,7 +141,7 @@ export function AppSidebar() {
                       <SidebarMenuSubItem>
                         <SidebarMenuSubButton asChild>
                           <Link href="/tables">
-                            <TrendingDown />
+                            <BetweenVerticalStart />
                             <span>Tables</span>
                           </Link>
                         </SidebarMenuSubButton>

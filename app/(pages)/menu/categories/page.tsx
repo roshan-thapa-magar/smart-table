@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Pencil, Trash, MoreHorizontal } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 
-// If you're using shadcn/ui dropdown
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -16,15 +15,19 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+
 import { DeleteDialog } from "@/components/delete-dialog";
 import FormBuilder, { FormField } from "@/components/form-builder";
 
+/** TYPE */
 interface Category {
   categoryName: string;
   status: string;
   image: string;
+  description?: string;
 }
 
+/** FORM FIELDS */
 const categoryFields: FormField[] = [
   {
     name: "categoryName",
@@ -41,60 +44,83 @@ const categoryFields: FormField[] = [
       { label: "Inactive", value: "Inactive" },
     ],
   },
+    {
+    name: "description",
+    label: "Description",
+    placeholder: "Enter category description",
+    type: "textarea",
+  },
   {
     name: "image",
     label: "Category Image",
-    placeholder: "Select Image",
-    type: "file",
+    type: "image",
   },
 ];
+
+/** SAMPLE DATA */
+const initialCategories: Category[] = [
+  {
+    categoryName: "Main Courses",
+    status: "Active",
+    description: "Includes rice, curry, grilled items",
+    image: "https://github.com/shadcn.png",
+  },
+  {
+    categoryName: "Appetizers",
+    status: "Active",
+    description: "Starters and light snacks",
+    image: "https://github.com/shadcn.png",
+  },
+  {
+    categoryName: "Desserts",
+    status: "Inactive",
+    description: "Sweet dishes and treats",
+    image: "https://github.com/shadcn.png",
+  },
+  {
+    categoryName: "Beverages",
+    status: "Active",
+    description: "Drinks including juice, soda, tea",
+    image: "https://github.com/shadcn.png",
+  },
+  {
+    categoryName: "Soups",
+    status: "Active",
+    description: "Hot and fresh soup varieties",
+    image: "https://github.com/shadcn.png",
+  },
+];
+
 export default function CategoriesPage() {
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [formOpen, setFormOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
 
-  const initialCategories: Category[] = [
-    {
-      categoryName: "Main Courses",
-      status: "Active",
-      image: "https://github.com/shadcn.png",
-    },
-    {
-      categoryName: "Appetizers",
-      status: "Active",
-      image: "https://github.com/shadcn.png",
-    },
-    {
-      categoryName: "Desserts",
-      status: "Inactive",
-      image: "https://github.com/shadcn.png",
-    },
-    {
-      categoryName: "Beverages",
-      status: "Active",
-      image: "https://github.com/shadcn.png",
-    },
-    {
-      categoryName: "Soups",
-      status: "Active",
-      image: "https://github.com/shadcn.png",
-    },
-  ];
-  const handleUpdateCategory = async () => { }
-  const handleCreateCategory = async () => { }
-  const handleSubmit = async () => {
-    console.log("Create and update  category ")
-  }
-  const handleDelete = async () => {
-    console.log("Delete category ")
-  }
+  /** HANDLERS */
+  const handleCreateCategory = async (values: Category) => {
+    console.log("Create:", values);
+  };
 
+  const handleUpdateCategory = async (values: Category) => {
+    console.log("Update:", values);
+  };
+
+  const handleDelete = async () => {
+    console.log("Delete:", selectedCategory);
+    setDeleteOpen(false);
+  };
+
+  /** COLUMNS */
   const columns: ColumnDefinition<Category>[] = useMemo(
     () => [
       {
         id: "categoryName",
         name: "Category Name",
+      },
+          {
+        id: "description",
+        name: "Description",
       },
       {
         id: "status",
@@ -159,31 +185,38 @@ export default function CategoriesPage() {
     []
   );
 
+  /** COLUMN VISIBILITY */
   const initialColumnVisibility = {
-    image: true,
     categoryName: true,
     status: true,
+    description: true,
+    image: true,
     action: true,
   };
 
   return (
     <>
+      {/* TABLE */}
       <DataTable
         data={initialCategories}
         columns={columns}
         initialColumnVisibility={initialColumnVisibility}
         searchPlaceholder="Search by category name..."
+        searchKey="categoryName"
         addLabel="Add Category"
         onAddClick={() => {
           setEditingCategory(null);
           setFormOpen(true);
         }}
-        searchKey="categoryName"
       />
 
+      {/* FORM */}
       <Dialog open={formOpen} onOpenChange={setFormOpen}>
-        <DialogContent>
-          <DialogTitle>{editingCategory ? "Edit Category" : "Add Category"}</DialogTitle>
+        <DialogContent >
+          <DialogTitle>
+            {editingCategory ? "Edit Category" : "Add Category"}
+          </DialogTitle>
+
           <FormBuilder
             title=""
             fields={categoryFields}
@@ -197,6 +230,7 @@ export default function CategoriesPage() {
         </DialogContent>
       </Dialog>
 
+      {/* DELETE */}
       <DeleteDialog
         isOpen={deleteOpen}
         isLoading={false}

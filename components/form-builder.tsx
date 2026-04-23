@@ -10,9 +10,19 @@ import SearchableSelect from "@/components/SearchableSelect";
 export interface FormField {
     name: string;
     label: string;
-    type: "text" | "file" | "select";
+    type:
+        | "text"
+        | "textarea"
+        | "select"
+        | "date"
+        | "time"
+        | "datetime"
+        | "image"
+        | "pdf";
+
     placeholder?: string;
     options?: { label: string; value: string }[];
+    accept?: string;
 }
 
 interface FormBuilderProps {
@@ -30,7 +40,7 @@ export default function FormBuilder({
 }: FormBuilderProps) {
     const [formData, setFormData] = useState<any>(defaultValues);
     const [loading, setLoading] = useState(false);
-    const [imagePreviews, setImagePreviews] = useState<Record<string, string>>(
+    const [filePreviews, setFilePreviews] = useState<Record<string, string>>(
         {}
     );
 
@@ -38,13 +48,31 @@ export default function FormBuilder({
         setFormData(defaultValues);
 
         const previews: Record<string, string> = {};
+
         fields.forEach((field) => {
-            if (field.type === "file" && defaultValues?.[field.name]) {
-                previews[field.name] = defaultValues[field.name];
+            if (
+                (field.type === "image" || field.type === "pdf") &&
+                defaultValues?.[field.name]
+            ) {
+                previews[field.name] =
+                    typeof defaultValues[field.name] === "string"
+                        ? defaultValues[field.name]
+                        : defaultValues[field.name]?.file;
             }
         });
-        setImagePreviews(previews);
+
+        setFilePreviews(previews);
     }, [defaultValues, fields]);
+
+    useEffect(() => {
+        return () => {
+            Object.values(filePreviews).forEach((url) => {
+                if (url?.startsWith("blob:")) {
+                    URL.revokeObjectURL(url);
+                }
+            });
+        };
+    }, [filePreviews]);
 
     const handleChange = (name: string, value: any) => {
         setFormData((prev: any) => ({
@@ -54,18 +82,18 @@ export default function FormBuilder({
     };
 
     const handleFileChange = (name: string, file: File) => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-            const base64 = reader.result as string;
+        const url = URL.createObjectURL(file);
 
-            handleChange(name, base64);
+        handleChange(name, {
+            file: url,
+            type: file.type,
+            name: file.name,
+        });
 
-            setImagePreviews((prev) => ({
-                ...prev,
-                [name]: base64,
-            }));
-        };
-        reader.readAsDataURL(file);
+        setFilePreviews((prev) => ({
+            ...prev,
+            [name]: url,
+        }));
     };
 
     const handleSubmit = async () => {
@@ -88,61 +116,158 @@ export default function FormBuilder({
         <div className="space-y-4">
             <h2 className="text-lg font-semibold">{title}</h2>
 
-            {fields.map((field) => (
-                <div key={field.name}>
-                    <label className="text-sm">{field.label}</label>
+            {/* GRID WRAPPER */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[70vh] md:max-h-none overflow-y-auto md:overflow-visible pr-1">
+                {fields.map((field) => (
+                    <div key={field.name} className="space-y-1">
+                        <label className="text-sm font-medium">
+                            {field.label}
+                        </label>
 
-                    {/* TEXT */}
-                    {field.type === "text" && (
-                        <Input
-                            placeholder={field.placeholder}
-                            value={formData[field.name] || ""}
-                            onChange={(e) =>
-                                handleChange(field.name, e.target.value)
-                            }
-                        />
-                    )}
-
-                    {/* SELECT */}
-                    {field.type === "select" && (
-                        <SearchableSelect
-                            label={field.label}
-                            value={formData[field.name] || ""}
-                            options={field.options || []}
-                            onChange={(val) =>
-                                handleChange(field.name, val)
-                            }
-                        />
-                    )}
-
-                    {/* FILE */}
-                    {field.type === "file" && (
-                        <>
+                        {/* TEXT */}
+                        {field.type === "text" && (
                             <Input
-                                type="file"
-                                accept="image/*"
-                                onChange={(e: any) =>
-                                    e.target.files &&
-                                    handleFileChange(
-                                        field.name,
-                                        e.target.files[0]
-                                    )
+                                placeholder={field.placeholder}
+                                value={formData[field.name] || ""}
+                                onChange={(e) =>
+                                    handleChange(field.name, e.target.value)
                                 }
                             />
+                        )}
 
-                            {imagePreviews[field.name] && (
-                                <img
-                                    src={imagePreviews[field.name]}
-                                    className="mt-2 w-32 h-32 object-cover rounded border"
+                        {/* TEXTAREA */}
+                        {field.type === "textarea" && (
+                            <textarea
+                                placeholder={field.placeholder}
+                                value={formData[field.name] || ""}
+                                onChange={(e) =>
+                                    handleChange(field.name, e.target.value)
+                                }
+                                className="w-full min-h-[100px] border rounded-md p-2 text-sm"
+                            />
+                        )}
+
+                        {/* DATE */}
+                        {field.type === "date" && (
+                            <Input
+                                type="date"
+                                value={formData[field.name] || ""}
+                                onChange={(e) =>
+                                    handleChange(field.name, e.target.value)
+                                }
+                            />
+                        )}
+
+                        {/* TIME */}
+                        {field.type === "time" && (
+                            <Input
+                                type="time"
+                                value={formData[field.name] || ""}
+                                onChange={(e) =>
+                                    handleChange(field.name, e.target.value)
+                                }
+                            />
+                        )}
+
+                        {/* DATETIME */}
+                        {field.type === "datetime" && (
+                            <div className="flex gap-2">
+                                <Input
+                                    type="date"
+                                    className="flex-1"
+                                    value={formData[field.name]?.date || ""}
+                                    onChange={(e) =>
+                                        handleChange(field.name, {
+                                            ...formData[field.name],
+                                            date: e.target.value,
+                                        })
+                                    }
                                 />
-                            )}
-                        </>
-                    )}
-                </div>
-            ))}
 
+                                <Input
+                                    type="time"
+                                    className="flex-1"
+                                    value={formData[field.name]?.time || ""}
+                                    onChange={(e) =>
+                                        handleChange(field.name, {
+                                            ...formData[field.name],
+                                            time: e.target.value,
+                                        })
+                                    }
+                                />
+                            </div>
+                        )}
+
+                        {/* SELECT */}
+                        {field.type === "select" && (
+                            <SearchableSelect
+                                label={field.label}
+                                value={formData[field.name] || ""}
+                                options={field.options || []}
+                                onChange={(val) =>
+                                    handleChange(field.name, val)
+                                }
+                            />
+                        )}
+
+                        {/* IMAGE */}
+                        {field.type === "image" && (
+                            <>
+                                <Input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={(e: any) =>
+                                        e.target.files &&
+                                        handleFileChange(
+                                            field.name,
+                                            e.target.files[0]
+                                        )
+                                    }
+                                />
+
+                                {filePreviews[field.name] && (
+                                    <img
+                                        src={filePreviews[field.name]}
+                                        className="mt-2 w-32 h-32 object-cover rounded border"
+                                    />
+                                )}
+                            </>
+                        )}
+
+                        {/* PDF */}
+                        {field.type === "pdf" && (
+                            <>
+                                <Input
+                                    type="file"
+                                    accept="application/pdf"
+                                    onChange={(e: any) =>
+                                        e.target.files &&
+                                        handleFileChange(
+                                            field.name,
+                                            e.target.files[0]
+                                        )
+                                    }
+                                />
+
+                                {filePreviews[field.name] && (
+                                    <a
+                                        href={filePreviews[field.name]}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="mt-2 block text-blue-500 underline text-sm"
+                                    >
+                                        📄 View PDF
+                                    </a>
+                                )}
+                            </>
+                        )}
+                    </div>
+                ))}
+            </div>
+
+            {/* SUBMIT */}
             <Button
-                className="w-full"
+                className="w-full mt-4"
                 onClick={handleSubmit}
                 disabled={loading}
             >

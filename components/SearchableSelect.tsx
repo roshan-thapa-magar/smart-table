@@ -2,7 +2,8 @@
 
 import { useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
-
+import { Check, ChevronsUpDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 interface Option {
     label: string;
     value: string;
@@ -37,15 +38,17 @@ export default function SearchableSelect({
         <div className="relative w-full">
             {/* Trigger */}
             <div
-                className="border rounded-md p-2 cursor-pointer bg-white"
+                className="flex justify-between items-center border rounded-md p-1.5 px-2 cursor-pointer dark:bg-muted"
                 onClick={() => setOpen((prev) => !prev)}
             >
                 {selectedLabel}
+                <ChevronsUpDown className="ml-2 h-4 w-4 opacity-50" />
+
             </div>
 
             {/* Dropdown */}
             {open && (
-                <div className="absolute z-50 w-full mt-1 border rounded-md bg-white shadow-md">
+                <div className="absolute z-50 w-full mt-1 border rounded-md bg-background dark:bg-muted shadow-md">
                     {/* Search */}
                     <div className="p-2 border-b">
                         <Input
@@ -58,20 +61,26 @@ export default function SearchableSelect({
                     {/* Options */}
                     <div className="max-h-40 overflow-auto">
                         {filtered.length === 0 ? (
-                            <div className="p-2 text-sm text-gray-500">
+                            <div className="p-2 text-sm">
                                 No results found
                             </div>
                         ) : (
                             filtered.map((opt, index) => (
                                 <div
                                     key={`${opt.value}-${opt.label}-${index}`}
-                                    className="p-2 hover:bg-gray-100 cursor-pointer"
+                                    className="flex items-center gap-2 p-2 hover:bg-background/50 cursor-pointer"
                                     onClick={() => {
                                         onChange(opt.value);
                                         setOpen(false);
                                         setSearch("");
                                     }}
                                 >
+                                    <Check
+                                        className={cn(
+                                            "mr-2 h-4 w-4",
+                                            value === opt.value ? "opacity-100" : "opacity-0"
+                                        )}
+                                    />
                                     {opt.label}
                                 </div>
                             ))
