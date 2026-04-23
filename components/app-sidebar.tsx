@@ -34,6 +34,7 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
+import { useSidebar } from "@/components/ui/sidebar";
 
 import {
   Collapsible,
@@ -42,8 +43,16 @@ import {
 } from "@/components/ui/collapsible";
 
 import Link from "next/link";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 
 export function AppSidebar() {
+  const { isMobile, setOpenMobile } = useSidebar();
+
+  const handleClick = () => {
+    if (isMobile) {
+      setOpenMobile(false);
+    }
+  };
   return (
     <Sidebar>
       <SidebarContent>
@@ -56,7 +65,7 @@ export function AppSidebar() {
               {/* Main */}
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
-                  <Link href="/home">
+                  <Link href="/home" onClick={handleClick}>
                     <Home />
                     <span>Home</span>
                   </Link>
@@ -65,7 +74,7 @@ export function AppSidebar() {
 
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
-                  <Link href="/pos">
+                  <Link href="/pos" onClick={handleClick}>
                     <RotateCcwSquare />
                     <span>POS</span>
                   </Link>
@@ -74,7 +83,7 @@ export function AppSidebar() {
 
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
-                  <Link href="/kds">
+                  <Link href="/kds" onClick={handleClick}>
                     <CookingPot />
                     <span>KDS</span>
                   </Link>
@@ -96,7 +105,7 @@ export function AppSidebar() {
                     <SidebarMenuSub>
                       <SidebarMenuSubItem>
                         <SidebarMenuSubButton asChild>
-                          <Link href="/user/categories">
+                          <Link href="/user/categories" onClick={handleClick}>
                             <Tags />
                             <span>Categories</span>
                           </Link>
@@ -105,7 +114,7 @@ export function AppSidebar() {
 
                       <SidebarMenuSubItem>
                         <SidebarMenuSubButton asChild>
-                          <Link href="/user">
+                          <Link href="/user" onClick={handleClick}>
                             <List />
                             <span>User List</span>
                           </Link>
@@ -131,7 +140,7 @@ export function AppSidebar() {
                     <SidebarMenuSub>
                       <SidebarMenuSubItem>
                         <SidebarMenuSubButton asChild>
-                          <Link href="/tables/departments">
+                          <Link href="/tables/departments" onClick={handleClick}>
                             <Section />
                             <span>Department</span>
                           </Link>
@@ -140,7 +149,7 @@ export function AppSidebar() {
 
                       <SidebarMenuSubItem>
                         <SidebarMenuSubButton asChild>
-                          <Link href="/tables">
+                          <Link href="/tables" onClick={handleClick}>
                             <BetweenVerticalStart />
                             <span>Tables</span>
                           </Link>
@@ -167,7 +176,7 @@ export function AppSidebar() {
                     <SidebarMenuSub>
                       <SidebarMenuSubItem>
                         <SidebarMenuSubButton asChild>
-                          <Link href="/menu/categories">
+                          <Link href="/menu/categories" onClick={handleClick}>
                             <Tags />
                             <span>Categories</span>
                           </Link>
@@ -176,7 +185,7 @@ export function AppSidebar() {
 
                       <SidebarMenuSubItem>
                         <SidebarMenuSubButton asChild>
-                          <Link href="/menu/stocks">
+                          <Link href="/menu/stocks" onClick={handleClick}>
                             <Boxes />
                             <span>Stock</span>
                           </Link>
@@ -203,7 +212,7 @@ export function AppSidebar() {
                     <SidebarMenuSub>
                       <SidebarMenuSubItem>
                         <SidebarMenuSubButton asChild>
-                          <Link href="/staffs/position">
+                          <Link href="/staffs/position" onClick={handleClick}>
                             <ChartBarIncreasing />
                             <span>Position</span>
                           </Link>
@@ -212,7 +221,7 @@ export function AppSidebar() {
 
                       <SidebarMenuSubItem>
                         <SidebarMenuSubButton asChild>
-                          <Link href="/staffs">
+                          <Link href="/staffs" onClick={handleClick}>
                             <List />
                             <span>Staff List</span>
                           </Link>
@@ -221,7 +230,7 @@ export function AppSidebar() {
 
                       <SidebarMenuSubItem>
                         <SidebarMenuSubButton asChild>
-                          <Link href="/staffs/attendance">
+                          <Link href="/staffs/attendance" onClick={handleClick}>
                             <FilePenLine  />
                             <span>Attendance</span>
                           </Link>
@@ -247,7 +256,7 @@ export function AppSidebar() {
                     <SidebarMenuSub>
                       <SidebarMenuSubItem>
                         <SidebarMenuSubButton asChild>
-                          <Link href="/report/sales">
+                          <Link href="/report/sales" onClick={handleClick}>
                             <TrendingUp />
                             <span>Sales</span>
                           </Link>
@@ -256,7 +265,7 @@ export function AppSidebar() {
 
                       <SidebarMenuSubItem>
                         <SidebarMenuSubButton asChild>
-                          <Link href="/report/purchase">
+                          <Link href="/report/purchase" onClick={handleClick}>
                             <TrendingDown />
                             <span>Purchase</span>
                           </Link>
