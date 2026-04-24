@@ -134,3 +134,9 @@
   grid-template-columns: repeat(2, minmax(0, 2fr)) !important;
   }
 }
+
+
+.hide-scrollbar {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
