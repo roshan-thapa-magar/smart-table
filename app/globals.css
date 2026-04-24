@@ -131,6 +131,6 @@
 
 @media (max-width: 350px) {
   .custom-grid {
-  grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+  grid-template-columns: repeat(2, minmax(0, 2fr)) !important;
   }
 }
