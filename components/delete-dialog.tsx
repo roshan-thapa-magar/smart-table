@@ -1,13 +1,12 @@
 'use client';
 
 import {
-  AlertDialog,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
@@ -42,36 +41,35 @@ export function DeleteDialog({
   onCancel,
 }: DeleteDialogProps) {
   return (
-    <AlertDialog
+    <Dialog
       open={isOpen}
       onOpenChange={(open) => {
         if (!isLoading && !open) onCancel();
       }}
     >
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>{title}</AlertDialogTitle>
-          <AlertDialogDescription>
-            {description}
-          </AlertDialogDescription>
-        </AlertDialogHeader>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>{description}</DialogDescription>
+        </DialogHeader>
 
         <div className="flex justify-end gap-3">
-          <AlertDialogCancel
+          <Button
+            variant="outline"
             onClick={onCancel}
             disabled={isLoading}
           >
             {cancelText}
-          </AlertDialogCancel>
+          </Button>
 
           <Button
             onClick={onConfirm}
             disabled={isLoading}
-            variant={isDangerous ? "destructive" : "default"}
+            variant={isDangerous ? 'destructive' : 'default'}
           >
             {isLoading ? (
               <span className="flex items-center gap-2">
-               {loadingText}
+                {loadingText}
                 <Loader2 className="h-4 w-4 animate-spin" />
               </span>
             ) : (
@@ -79,7 +77,7 @@ export function DeleteDialog({
             )}
           </Button>
         </div>
-      </AlertDialogContent>
-    </AlertDialog>
+      </DialogContent>
+    </Dialog>
   );
 }
