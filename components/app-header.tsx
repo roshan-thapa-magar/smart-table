@@ -59,11 +59,7 @@ export function AppHeader() {
                 <Button variant="ghost" size="icon">
                     <Bell className="h-4 w-4" />
                 </Button>
-                {/* <Button variant="ghost" size="icon">
-          <Globe className="h-4 w-4" />
-        </Button> */}
                 <UserAvatar />
-                {/* <ToggleTheme /> */}
             </div>
         </header>
     );

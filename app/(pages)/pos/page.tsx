@@ -4,7 +4,7 @@ import React from 'react'
 
 export default function page() {
   return (
-    <div className="flex h-full gap-4 p-4">
+    <div className="flex h-full ">
       
       {/* Left Side - Tables */}
       <div className="w-full lg:w-1/2 overflow-y-auto">
@@ -15,7 +15,6 @@ export default function page() {
       <div className="w-1/2 overflow-y-auto border rounded-lg p-2 hidden lg:block">
         <TableOrderDetails />
       </div>
-
     </div>
   )
 }

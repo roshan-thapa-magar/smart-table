@@ -23,8 +23,7 @@ const UserAvatar = () => {
 
   return (
     <>
-      {/* ================= DESKTOP ================= */}
-      <div className="hidden md:block">
+      <div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Avatar className="w-6 h-6 cursor-pointer">
@@ -57,18 +56,6 @@ const UserAvatar = () => {
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-      </div>
-
-      {/* ================= MOBILE ================= */}
-      <div className="block md:hidden">
-        <Link href="/user/profile">
-          <Avatar className="w-6 h-6 cursor-pointer">
-            <AvatarImage src={user.image} />
-            <AvatarFallback>
-              {user.name.charAt(0)}
-            </AvatarFallback>
-          </Avatar>
-        </Link>
       </div>
     </>
   )
