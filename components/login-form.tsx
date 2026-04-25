@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -11,12 +12,15 @@ import {
   FieldSeparator,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import { Eye, EyeOff } from "lucide-react"
 
 type Props = React.ComponentProps<"div"> & {
   setMode?: (mode: "login" | "signup") => void
 }
 
 export function LoginForm({ className, setMode, ...props }: Props) {
+  const [showPassword, setShowPassword] = useState(false)
+
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card className="overflow-hidden p-0">
@@ -62,6 +66,7 @@ export function LoginForm({ className, setMode, ...props }: Props) {
               <Field>
                 <div className="flex items-center">
                   <FieldLabel htmlFor="password">Password</FieldLabel>
+
                   <a
                     href="#"
                     className="ml-auto text-sm underline-offset-2 hover:underline"
@@ -69,7 +74,26 @@ export function LoginForm({ className, setMode, ...props }: Props) {
                     Forgot password?
                   </a>
                 </div>
-                <Input id="password" type="password" required />
+
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    required
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                  >
+                    {showPassword ? (
+                      <EyeOff size={18} />
+                    ) : (
+                      <Eye size={18} />
+                    )}
+                  </button>
+                </div>
               </Field>
 
               {/* LOGIN BUTTON */}

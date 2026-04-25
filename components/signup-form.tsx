@@ -17,6 +17,7 @@ import {
   FieldLabel,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import { Eye, EyeOff } from "lucide-react"
 
 type Props = React.ComponentProps<"div"> & {
   setMode?: (mode: "login" | "signup") => void
@@ -25,7 +26,10 @@ type Props = React.ComponentProps<"div"> & {
 export function SignupForm({ className, setMode, ...props }: Props) {
   const [imagePreview, setImagePreview] = useState<string | null>(null)
 
-  // 🧠 cleanup memory leak
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+
+  // cleanup memory leak
   useEffect(() => {
     return () => {
       if (imagePreview) {
@@ -87,7 +91,7 @@ export function SignupForm({ className, setMode, ...props }: Props) {
                 </FieldDescription>
               </div>
 
-              {/* NAME */}
+              {/* FULL NAME */}
               <Field>
                 <FieldLabel htmlFor="name">Full Name</FieldLabel>
                 <Input id="name" type="text" placeholder="John Doe" required />
@@ -115,19 +119,59 @@ export function SignupForm({ className, setMode, ...props }: Props) {
                 />
               </Field>
 
-              {/* PASSWORD */}
+              {/* PASSWORDS */}
               <div className="grid grid-cols-2 gap-4">
+
+                {/* PASSWORD */}
                 <Field>
                   <FieldLabel htmlFor="password">Password</FieldLabel>
-                  <Input id="password" type="password" required />
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((prev) => !prev)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                    >
+                      {showPassword ? (
+                        <EyeOff size={18} />
+                      ) : (
+                        <Eye size={18} />
+                      )}
+                    </button>
+                  </div>
                 </Field>
 
+                {/* CONFIRM PASSWORD */}
                 <Field>
                   <FieldLabel htmlFor="confirm-password">
                     Confirm Password
                   </FieldLabel>
-                  <Input id="confirm-password" type="password" required />
+                  <div className="relative">
+                    <Input
+                      id="confirm-password"
+                      type={showConfirmPassword ? "text" : "password"}
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setShowConfirmPassword((prev) => !prev)
+                      }
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                    >
+                      {showConfirmPassword ? (
+                        <EyeOff size={18} />
+                      ) : (
+                        <Eye size={18} />
+                      )}
+                    </button>
+                  </div>
                 </Field>
+
               </div>
 
               <FieldDescription>
