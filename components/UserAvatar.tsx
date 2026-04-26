@@ -11,8 +11,10 @@ import {
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ThemeToggle } from "./theme-toggle"
+import { useAuthModal } from "@/context/auth-modal-context";
 
 const UserAvatar = () => {
+  const { openModal } = useAuthModal();
   // 🔹 Static UI data (no backend)
   const user = {
     name: "Roshan",
@@ -46,6 +48,14 @@ const UserAvatar = () => {
               <ThemeToggle />
             </div>
 
+            <DropdownMenuSeparator />
+
+            <DropdownMenuItem
+              className="cursor-pointer"
+              onClick={openModal}
+            >
+              Login Dialog
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
 
             <DropdownMenuItem

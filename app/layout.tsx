@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider"
+import { AuthModalProvider } from "@/context/auth-modal-context";
+
 import "./globals.css";
 
 const geistSans = Geist({
@@ -30,6 +32,7 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
+        <AuthModalProvider>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
@@ -38,6 +41,7 @@ export default function RootLayout({
         >
           {children}
         </ThemeProvider>
+        </AuthModalProvider>
       </body>
     </html>
   );

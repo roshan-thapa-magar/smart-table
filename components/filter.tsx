@@ -59,7 +59,7 @@ export function Filter({
         <p className="font-semibold text-sm">Filter</p>
       </div>
 
-      <div className="h-[300px] overflow-y-auto">
+      <div className="h-[300px] overflow-y-auto hide-scrollbar ">
         <div className="grid grid-cols-3 gap-2">
           {options.map((opt) => (
             <label

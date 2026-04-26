@@ -119,7 +119,7 @@ export default function RestaurantList() {
         {restaurants.map((item) => (
           <Link
             key={item.id}
-            href="#"
+            href={`/restaurants/${item.id}`}
             className="border rounded-xl overflow-hidden shadow-sm hover:shadow-md transition "
           >
             {/* Image */}
