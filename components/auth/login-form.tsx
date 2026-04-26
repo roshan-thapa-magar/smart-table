@@ -39,7 +39,6 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
   const [phone, setPhone] = useState('')
   const [loading, setLoading] = useState(false)
   const [loadingGoogle, setLoadingGoogle] = useState(false)
-  const [countdown, setCountdown] = useState(60)
 
   const { closeModal } = useAuthModal()
   const isDesktop = useMediaQuery('(min-width: 768px)')
@@ -48,49 +47,28 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
   const otpRef = useRef<HTMLInputElement>(null)
   const nameRef = useRef<HTMLInputElement>(null)
 
-  /* ✅ Fix iOS viewport (keyboard safe) */
-  useEffect(() => {
-    const setVH = () => {
-      document.documentElement.style.setProperty(
-        '--vh',
-        `${window.innerHeight * 0.01}px`
-      )
-    }
-
-    setVH()
-    window.addEventListener('resize', setVH)
-    return () => window.removeEventListener('resize', setVH)
-  }, [])
-
-  /* ✅ Auto scroll focused input into center */
-  useEffect(() => {
-    const handler = (e: FocusEvent) => {
-      const el = e.target as HTMLElement
-      setTimeout(() => {
-        el.scrollIntoView({
-          behavior: 'smooth',
-          block: 'center'
-        })
-      }, 300)
-    }
-
-    document.addEventListener('focusin', handler)
-    return () => document.removeEventListener('focusin', handler)
-  }, [])
-
-  /* countdown */
-  useEffect(() => {
-    if (step !== 1 || countdown <= 0) return
-    const timer = setTimeout(() => setCountdown(countdown - 1), 1000)
-    return () => clearTimeout(timer)
-  }, [countdown, step])
-
-  /* autofocus */
+  // autofocus
   useEffect(() => {
     if (step === 0) emailRef.current?.focus()
     if (step === 1) otpRef.current?.focus()
     if (step === 2) nameRef.current?.focus()
   }, [step])
+
+  // scroll focused input into view (mobile fix)
+  useEffect(() => {
+    const handler = (e: FocusEvent) => {
+      const el = e.target as HTMLElement
+      setTimeout(() => {
+        el.scrollIntoView({
+          block: "center",
+          behavior: "smooth",
+        })
+      }, 200)
+    }
+
+    document.addEventListener("focusin", handler)
+    return () => document.removeEventListener("focusin", handler)
+  }, [])
 
   const handleSendOtp = async (e?: React.FormEvent) => {
     e?.preventDefault()
@@ -98,63 +76,81 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
     setLoading(true)
     setTimeout(() => {
       setStep(1)
-      setCountdown(60)
       setLoading(false)
-    }, 800)
+    }, 600)
   }
 
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!otp) return
     setLoading(true)
     setTimeout(() => {
       setLoading(false)
       closeModal()
-    }, 800)
+    }, 600)
   }
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!name || !phone) return
     setLoading(true)
     setTimeout(() => {
       setLoading(false)
       closeModal()
-    }, 800)
+    }, 600)
   }
 
   const handleGoogleLogin = async () => {
     setLoadingGoogle(true)
-    setTimeout(() => setLoadingGoogle(false), 1200)
+    setTimeout(() => setLoadingGoogle(false), 1000)
   }
 
+  // ---------------------------
+  // Divider FIX (your issue)
+  // ---------------------------
+  const Divider = () => (
+    <div className="flex items-center gap-3 my-4">
+      <div className="h-px flex-1 bg-border" />
+      <span className="text-xs uppercase text-muted-foreground">or</span>
+      <div className="h-px flex-1 bg-border" />
+    </div>
+  )
+
   const FormContent = () => (
-    <CardContent>
+    <CardContent className="pb-6">
       {step === 0 && (
         <form onSubmit={handleSendOtp}>
           <FieldGroup>
             <Field>
-              <FieldLabel>Email Address</FieldLabel>
+              <FieldLabel>Email</FieldLabel>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" />
                 <Input
                   ref={emailRef}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  type="email"
-                  placeholder="you@example.com"
                   className="pl-9 h-11"
+                  type="email"
                 />
               </div>
             </Field>
 
             <Button className="w-full h-11" disabled={loading}>
-              {loading ? <Loader2 className="animate-spin w-4 h-4 mr-2" /> : <ArrowRight className="w-4 h-4 mr-2" />}
+              {loading ? <Loader2 className="animate-spin w-4 h-4 mr-2" /> : <ArrowRight />}
               Login with OTP
             </Button>
 
-            <Button type="button" variant="outline" onClick={handleGoogleLogin} className="w-full h-11">
-              {loadingGoogle ? <Loader2 className="animate-spin w-4 h-4 mr-2" /> : <IoLogoGoogle />}
+            <Divider />
+
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleGoogleLogin}
+              className="w-full h-11"
+            >
+              {loadingGoogle ? (
+                <Loader2 className="animate-spin w-4 h-4 mr-2" />
+              ) : (
+                <IoLogoGoogle />
+              )}
               Continue with Google
             </Button>
           </FieldGroup>
@@ -170,7 +166,9 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
                   <InputOTPSlot key={i} index={i} ref={i === 0 ? otpRef : null} />
                 ))}
               </InputOTPGroup>
+
               <InputOTPSeparator />
+
               <InputOTPGroup>
                 {[3, 4, 5].map(i => (
                   <InputOTPSlot key={i} index={i} />
@@ -179,12 +177,18 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
             </InputOTP>
           </div>
 
-          <Button className="w-full mt-4" disabled={loading || !otp}>
-            {loading ? <Loader2 className="animate-spin w-4 h-4 mr-2" /> : 'Verify & Continue'}
+          <Button className="w-full mt-4" disabled={loading}>
+            {loading ? <Loader2 className="animate-spin w-4 h-4 mr-2" /> : "Verify"}
           </Button>
 
-          <Button type="button" variant="outline" onClick={() => setStep(0)} className="w-full mt-2">
-            <ArrowLeft className="w-4 h-4 mr-2" /> Back
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setStep(0)}
+            className="w-full mt-2"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back
           </Button>
         </form>
       )}
@@ -193,9 +197,9 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
         <form onSubmit={handleRegister}>
           <FieldGroup>
             <Field>
-              <FieldLabel>Full Name</FieldLabel>
+              <FieldLabel>Name</FieldLabel>
               <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" />
                 <Input
                   ref={nameRef}
                   value={name}
@@ -208,7 +212,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
             <Field>
               <FieldLabel>Phone</FieldLabel>
               <div className="relative">
-                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" />
                 <Input
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
@@ -218,7 +222,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
             </Field>
 
             <Button className="w-full h-11" disabled={loading}>
-              {loading ? <Loader2 className="animate-spin w-4 h-4 mr-2" /> : 'Complete Registration'}
+              {loading ? <Loader2 className="animate-spin w-4 h-4 mr-2" /> : "Complete"}
             </Button>
           </FieldGroup>
         </form>
@@ -226,21 +230,16 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
     </CardContent>
   )
 
+  // ---------------------------
+  // Desktop
+  // ---------------------------
   if (isDesktop) {
     return (
-      <div className={cn('flex flex-col gap-6', className)} {...props}>
+      <div className={cn("flex flex-col gap-6", className)} {...props}>
         <Card className="w-full max-w-md mx-auto">
           <CardHeader className="text-center">
-            <CardTitle>
-              {step === 0 && 'Welcome Back'}
-              {step === 1 && 'Check OTP'}
-              {step === 2 && 'Complete Profile'}
-            </CardTitle>
-            <CardDescription>
-              {step === 0 && 'Login with email or Google'}
-              {step === 1 && `OTP sent to ${email}`}
-              {step === 2 && 'Finish registration'}
-            </CardDescription>
+            <CardTitle>Login</CardTitle>
+            <CardDescription>Sign in to continue</CardDescription>
           </CardHeader>
           {FormContent()}
         </Card>
@@ -248,24 +247,19 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
     )
   }
 
+  // ---------------------------
+  // Mobile Drawer (FIXED)
+  // ---------------------------
   return (
     <Drawer open onOpenChange={closeModal}>
-      <DrawerContent className="max-h-[90dvh] flex flex-col">
+      <DrawerContent className="flex flex-col">
         <DrawerHeader className="text-center">
-          <DrawerTitle>
-            {step === 0 ? 'Welcome Back' : step === 1 ? 'Check OTP' : 'Complete Profile'}
-          </DrawerTitle>
-          <DrawerDescription>
-            {step === 0
-              ? 'Login with email or Google'
-              : step === 1
-              ? `OTP sent to ${email}`
-              : 'Finish registration'}
-          </DrawerDescription>
+          <DrawerTitle>Login</DrawerTitle>
+          <DrawerDescription>Continue with email or Google</DrawerDescription>
         </DrawerHeader>
 
-        {/* ✅ KEY FIX AREA */}
-        <div className="flex-1 overflow-y-auto pb-36 px-4 overscroll-contain max-h-[calc(var(--vh,1vh)*80)]">
+        {/* ONLY ONE SCROLL CONTAINER */}
+        <div className="flex-1 overflow-y-auto px-4 pb-32">
           {FormContent()}
         </div>
       </DrawerContent>
