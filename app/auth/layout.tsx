@@ -1,11 +1,13 @@
 import { Badge } from "@/components/ui/badge"
 import {
-  Smartphone,
   TabletSmartphone,
   Users,
   QrCode,
   TrendingUp,
   ArrowUpLeft,
+  UtensilsCrossed,
+  Truck,
+  Store,
 } from "lucide-react"
 import Link from "next/link"
 
@@ -15,71 +17,117 @@ export default function AuthLayout({
   children: React.ReactNode
 }) {
   return (
-    <div className="grid min-h-svh lg:grid-cols-2">
+    <div className="grid min-h-svh lg:grid-cols-2 bg-background">
 
-      {/* LEFT SIDE - FIXED */}
-      <div className="relative hidden lg:flex flex-col justify-between bg-gradient-to-br from-primary/5 via-primary/10 to-background p-8">
+      {/* LEFT SIDE - BRAND / INFO */}
+      <div className="relative hidden lg:flex items-center justify-center px-10">
 
-        <div className="absolute inset-0 bg-grid-primary/10 [mask-image:radial-gradient(ellipse_at_center,white,transparent)]" />
+        {/* background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-primary/10" />
+        <div className="absolute inset-0 bg-grid-primary/10 [mask-image:radial-gradient(circle_at_center,white,transparent)]" />
 
-        {/* LOGO */}
-        <div className="relative z-10 flex items-center gap-2">
-          <div className="flex size-8 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-lg">
-            <TabletSmartphone className="size-5" />
+        <div className="relative z-10 max-w-md space-y-10">
+
+          {/* LOGO */}
+          <div className="flex items-center gap-3">
+            <div className="size-10 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shadow-sm">
+              <TabletSmartphone className="size-5" />
+            </div>
+            <span className="text-lg font-semibold tracking-tight">
+              SmartTable
+            </span>
           </div>
-          <span className="text-xl font-semibold">SmartTable</span>
-        </div>
 
-        {/* CONTENT */}
-        <div className="relative z-10 space-y-8">
-          <div>
-            <h1 className="text-4xl font-bold">
-              Welcome to SmartTable
+          {/* HEADLINE */}
+          <div className="space-y-3">
+            <h1 className="text-4xl font-semibold leading-tight tracking-tight">
+              Run your restaurant smarter with QR dining and online orders
             </h1>
-            <p className="text-muted-foreground max-w-md">
-              Manage orders, customers and grow your restaurant with QR system.
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              A unified system to manage table-side QR ordering, kitchen flow, and online customers — all in one dashboard.
             </p>
           </div>
 
-          <div className="grid grid-cols-3 gap-4">
-            <Stat icon={<Users className="h-5 w-5" />} value="1,234" label="Clients" />
-            <Stat icon={<Users className="h-5 w-5" />} value="5,678" label="Customers" />
-            <Stat icon={<QrCode className="h-5 w-5" />} value="4,521" label="QR Scans" />
+          {/* MODES */}
+          <div className="space-y-3">
+
+            <FeatureCard
+              icon={<UtensilsCrossed className="size-4" />}
+              title="QR Table Ordering"
+              desc="Guests scan a QR at their table and place orders instantly — no waiting staff needed"
+            />
+
+            <FeatureCard
+              icon={<Truck className="size-4" />}
+              title="Online Ordering System"
+              desc="Accept delivery and pickup orders from your website or customers remotely"
+            />
+
+            <FeatureCard
+              icon={<Store className="size-4" />}
+              title="Restaurant Dashboard"
+              desc="Manage menu, staff, tables, orders, and reports in real time"
+            />
+
           </div>
 
-          <div className="flex gap-2 flex-wrap">
-            <Tag icon={<Smartphone className="h-4 w-4" />} text="Table QR" />
-            <Tag icon={<TrendingUp className="h-4 w-4" />} text="Analytics" />
+          {/* STATS */}
+          <div className="grid grid-cols-3 gap-3">
+            <Stat icon={<Users className="size-4" />} value="1.2k+" label="Active Users" />
+            <Stat icon={<QrCode className="size-4" />} value="4.5k+" label="QR Orders" />
+            <Stat icon={<TrendingUp className="size-4" />} value="92%" label="Efficiency" />
           </div>
-        </div>
 
-        <div className="text-xs text-muted-foreground">
-          © 2025 SmartTable
+          {/* TAGS */}
+          <div className="flex flex-wrap gap-2">
+            <Tag text="QR Dining" />
+            <Tag text="Online Orders" />
+            <Tag text="Kitchen System" />
+            <Tag text="Real-time Sync" />
+          </div>
+
+          <p className="text-xs text-muted-foreground pt-4">
+            © 2026 SmartTable — Built for modern restaurant operations
+          </p>
         </div>
       </div>
 
-      {/* RIGHT SIDE (ROUTED CONTENT) */}
-      <div className="relative flex items-center justify-center p-6 md:p-10">
+      {/* RIGHT SIDE - AUTH */}
+      <div className="relative flex items-center justify-center px-6 md:px-10">
 
-        {/* TOP BAR */}
-        <div className="absolute top-4 left-4">
+        {/* top nav */}
+        <div className="absolute top-5 left-5">
           <Link
             href="/"
-            className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition"
+            className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition"
           >
             <Badge variant="outline" className="p-1">
-              <ArrowUpLeft className="h-3.5 w-3.5" />
+              <ArrowUpLeft className="size-3.5" />
             </Badge>
-
-            Home
+            Back to Home
           </Link>
         </div>
 
-        {/* CONTENT */}
+        {/* auth container */}
         <div className="w-full max-w-md">
           {children}
         </div>
+      </div>
+    </div>
+  )
+}
 
+/* ================= UI COMPONENTS ================= */
+
+function FeatureCard({ icon, title, desc }: any) {
+  return (
+    <div className="flex gap-3 rounded-xl border bg-background/60 backdrop-blur-sm p-4 hover:bg-background/80 transition">
+      <div className="text-primary mt-0.5">{icon}</div>
+      <div className="space-y-1">
+        <div className="text-sm font-medium">{title}</div>
+        <div className="text-xs text-muted-foreground leading-relaxed">
+          {desc}
+        </div>
       </div>
     </div>
   )
@@ -87,18 +135,19 @@ export default function AuthLayout({
 
 function Stat({ icon, value, label }: any) {
   return (
-    <div className="rounded-xl border p-4">
-      {icon}
-      <div className="text-xl font-bold">{value}</div>
-      <div className="text-xs text-muted-foreground">{label}</div>
+    <div className="rounded-xl border bg-background/60 p-3 text-center space-y-1">
+      <div className="flex justify-center text-muted-foreground">
+        {icon}
+      </div>
+      <div className="text-sm font-semibold">{value}</div>
+      <div className="text-[11px] text-muted-foreground">{label}</div>
     </div>
   )
 }
 
-function Tag({ icon, text }: any) {
+function Tag({ text }: any) {
   return (
-    <div className="flex items-center gap-2 bg-primary/10 px-3 py-1 rounded-full text-sm">
-      {icon}
+    <div className="rounded-full border bg-background/60 px-3 py-1 text-xs text-muted-foreground">
       {text}
     </div>
   )
