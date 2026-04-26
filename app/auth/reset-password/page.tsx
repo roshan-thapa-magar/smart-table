@@ -23,7 +23,6 @@ export default function ResetPasswordPage() {
   const [confirmPassword, setConfirmPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
-  const [done, setDone] = useState(false)
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -33,7 +32,7 @@ export default function ResetPasswordPage() {
       return
     }
 
-    setDone(true)
+    alert("Password reset form submitted")
   }
 
   return (
@@ -47,72 +46,73 @@ export default function ResetPasswordPage() {
         </CardHeader>
 
         <CardContent>
-          {!done ? (
-            <form onSubmit={handleSubmit}>
-              <FieldGroup>
+          <form onSubmit={handleSubmit}>
+            <FieldGroup>
 
-                {/* NEW PASSWORD */}
-                <Field>
-                  <FieldLabel>New Password</FieldLabel>
-                  <div className="relative">
-                    <Input
-                      type={showPassword ? "text" : "password"}
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2"
-                    >
-                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                    </button>
-                  </div>
-                </Field>
+              {/* NEW PASSWORD */}
+              <Field>
+                <FieldLabel>New Password</FieldLabel>
+                <div className="relative">
+                  <Input
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2"
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+              </Field>
 
-                {/* CONFIRM PASSWORD */}
-                <Field>
-                  <FieldLabel>Confirm Password</FieldLabel>
-                  <div className="relative">
-                    <Input
-                      type={showConfirm ? "text" : "password"}
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      required
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowConfirm(!showConfirm)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2"
-                    >
-                      {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
-                    </button>
-                  </div>
-                </Field>
+              {/* CONFIRM PASSWORD */}
+              <Field>
+                <FieldLabel>Confirm Password</FieldLabel>
+                <div className="relative">
+                  <Input
+                    type={showConfirm ? "text" : "password"}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirm(!showConfirm)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2"
+                  >
+                    {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+              </Field>
 
-                <FieldDescription>
-                  Password must be strong and secure
-                </FieldDescription>
+              <FieldDescription>
+                Password must be strong and secure
+              </FieldDescription>
 
-                <Field>
-                  <Button className="w-full" type="submit">
-                    Reset Password
-                  </Button>
-                </Field>
+              {/* SUBMIT BUTTON */}
+              <Field>
+                <Button className="w-full" type="submit">
+                  Reset Password
+                </Button>
+              </Field>
 
-              </FieldGroup>
-            </form>
-          ) : (
-            <div className="text-center space-y-2">
-              <p className="text-sm text-muted-foreground">
-                Password updated successfully
-              </p>
-              <p className="text-xs text-muted-foreground">
-                You can now go back and login.
-              </p>
-            </div>
-          )}
+              {/* BACK TO LOGIN */}
+              <div className="text-center">
+                <button
+                  type="button"
+                  onClick={() => (window.location.href = "/auth/login")}
+                  className="text-sm underline text-muted-foreground cursor-pointer"
+                >
+                  Back to login
+                </button>
+              </div>
+
+            </FieldGroup>
+          </form>
         </CardContent>
       </Card>
     </div>
