@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import { useSearchParams, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -20,19 +19,13 @@ import { Input } from "@/components/ui/input"
 import { Eye, EyeOff } from "lucide-react"
 
 export default function ResetPasswordPage() {
-  const router = useRouter()
-  const searchParams = useSearchParams()
-
-  const token = searchParams.get("token")
-
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
-  const [loading, setLoading] = useState(false)
   const [done, setDone] = useState(false)
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
     if (password !== confirmPassword) {
@@ -40,22 +33,7 @@ export default function ResetPasswordPage() {
       return
     }
 
-    setLoading(true)
-
-    try {
-      // TODO: call API
-      console.log("Reset token:", token)
-      console.log("New password:", password)
-
-      setDone(true)
-
-      setTimeout(() => {
-        router.push("/auth/login")
-      }, 2000)
-
-    } finally {
-      setLoading(false)
-    }
+    setDone(true)
   }
 
   return (
@@ -83,7 +61,6 @@ export default function ResetPasswordPage() {
                       onChange={(e) => setPassword(e.target.value)}
                       required
                     />
-
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
@@ -104,7 +81,6 @@ export default function ResetPasswordPage() {
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       required
                     />
-
                     <button
                       type="button"
                       onClick={() => setShowConfirm(!showConfirm)}
@@ -120,8 +96,8 @@ export default function ResetPasswordPage() {
                 </FieldDescription>
 
                 <Field>
-                  <Button className="w-full" type="submit" disabled={loading}>
-                    {loading ? "Updating..." : "Reset Password"}
+                  <Button className="w-full" type="submit">
+                    Reset Password
                   </Button>
                 </Field>
 
@@ -132,9 +108,8 @@ export default function ResetPasswordPage() {
               <p className="text-sm text-muted-foreground">
                 Password updated successfully
               </p>
-
               <p className="text-xs text-muted-foreground">
-                Redirecting to login...
+                You can now go back and login.
               </p>
             </div>
           )}
