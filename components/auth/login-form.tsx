@@ -31,21 +31,36 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
   const otpRef = useRef<HTMLInputElement>(null)
   const nameRef = useRef<HTMLInputElement>(null)
 
-  // countdown
+  const scrollToInput = (ref: any) => {
+    setTimeout(() => {
+      ref?.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "center"
+      })
+    }, 300)
+  }
+
+  useEffect(() => {
+    if (step === 0) {
+      emailRef.current?.focus()
+      scrollToInput(emailRef)
+    }
+    if (step === 1) {
+      otpRef.current?.focus()
+      scrollToInput(otpRef)
+    }
+    if (step === 2) {
+      nameRef.current?.focus()
+      scrollToInput(nameRef)
+    }
+  }, [step])
+
   useEffect(() => {
     if (step !== 1 || countdown <= 0) return
     const timer = setTimeout(() => setCountdown(countdown - 1), 1000)
     return () => clearTimeout(timer)
   }, [countdown, step])
 
-  // autofocus
-  useEffect(() => {
-    if (step === 0) emailRef.current?.focus()
-    if (step === 1) otpRef.current?.focus()
-    if (step === 2) nameRef.current?.focus()
-  }, [step])
-
-  // FRONTEND ONLY: fake OTP send
   const handleSendOtp = async (e?: React.FormEvent) => {
     e?.preventDefault()
     if (!email) return toast('Email required')
@@ -60,7 +75,6 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
     }, 800)
   }
 
-  // FRONTEND ONLY: fake OTP verify
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!otp) return toast('Enter OTP')
@@ -70,7 +84,6 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
     setTimeout(() => {
       setLoading(false)
 
-      // fake rule: if otp is 6 digits continue else go register
       if (otp === "123456") {
         toast.success('Login successful (mock)')
         closeModal()
@@ -81,7 +94,6 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
     }, 800)
   }
 
-  // FRONTEND ONLY: fake register
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!name || !phone || !email) return toast('Fill all fields')
@@ -130,27 +142,8 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
               Login with OTP
             </Button>
 
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-border" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">or</span>
-              </div>
-            </div>
-
-            <Button
-              variant="outline"
-              type="button"
-              onClick={handleGoogleLogin}
-              disabled={loadingGoogle}
-              className="w-full h-11"
-            >
-              {loadingGoogle ? (
-                <Loader2 className="animate-spin h-4 w-4 mr-2" />
-              ) : (
-                <IoLogoGoogle />
-              )}
+            <Button variant="outline" type="button" onClick={handleGoogleLogin} disabled={loadingGoogle} className="w-full h-11">
+              {loadingGoogle ? <Loader2 className="animate-spin h-4 w-4 mr-2" /> : <IoLogoGoogle />}
               Continue with Google
             </Button>
           </FieldGroup>
@@ -180,7 +173,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
           </Button>
 
           <Button variant="outline" type="button" onClick={() => setStep(0)} className="w-full mt-2">
-            <ArrowLeft className="w-4 h-4 mr-2" /> Back to Email
+            <ArrowLeft className="w-4 h-4 mr-2" /> Back
           </Button>
         </form>
       )}
@@ -221,7 +214,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
               </Button>
 
               <Button type="submit" disabled={loading} className="flex-1 h-11">
-                {loading ? <Loader2 className="animate-spin w-4 h-4 mr-2" /> : 'Complete Registration'}
+                {loading ? <Loader2 className="animate-spin w-4 h-4 mr-2" /> : 'Complete'}
               </Button>
             </div>
           </FieldGroup>
@@ -234,37 +227,22 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
     <div className={cn('flex flex-col gap-6', className)} {...props}>
       <Card className="w-full max-w-md mx-auto shadow-2xl border-0 bg-muted">
         <CardHeader className="text-center">
-          <CardTitle>
-            {step === 0 && 'Welcome Back'}
-            {step === 1 && 'Check Your Email'}
-            {step === 2 && 'Complete Profile'}
-          </CardTitle>
-          <CardDescription>
-            {step === 0 && 'Sign in with email or Google'}
-            {step === 1 && `Enter OTP sent to ${email}`}
-            {step === 2 && 'Complete your profile'}
-          </CardDescription>
+          <CardTitle>{step === 0 ? 'Welcome Back' : step === 1 ? 'Check Email' : 'Complete Profile'}</CardTitle>
         </CardHeader>
         {FormContent()}
       </Card>
     </div>
   ) : (
     <Drawer open onOpenChange={closeModal}>
-      <DrawerContent className="max-h-[90vh]">
+      <DrawerContent
+        className="max-h-[100dvh] overflow-hidden"
+      >
         <DrawerHeader className="text-center">
-          <DrawerTitle>
-            {step === 0 ? 'Welcome Back' : step === 1 ? 'Check Email' : 'Complete Profile'}
-          </DrawerTitle>
-          <DrawerDescription>
-            {step === 0
-              ? 'Login with email or Google'
-              : step === 1
-              ? `OTP sent to ${email}`
-              : 'Fill your details'}
-          </DrawerDescription>
+          <DrawerTitle>{step === 0 ? 'Welcome Back' : step === 1 ? 'Check Email' : 'Complete Profile'}</DrawerTitle>
         </DrawerHeader>
 
-        <div className="overflow-y-auto max-h-[80vh] my-8">
+        {/* FIX: scroll container for iOS keyboard */}
+        <div className="overflow-y-auto max-h-[calc(100dvh-120px)] px-1 pb-10">
           {FormContent()}
         </div>
       </DrawerContent>
