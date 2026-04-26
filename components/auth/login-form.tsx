@@ -2,7 +2,7 @@
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot } from "@/components/ui/input-otp"
@@ -22,6 +22,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
   const [phone, setPhone] = useState('')
   const [loading, setLoading] = useState(false)
   const [loadingGoogle, setLoadingGoogle] = useState(false)
+  const [countdown, setCountdown] = useState(60)
 
   const { closeModal } = useAuthModal()
   const isDesktop = useMediaQuery('(min-width: 768px)')
@@ -30,16 +31,13 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
   const otpRef = useRef<HTMLInputElement>(null)
   const nameRef = useRef<HTMLInputElement>(null)
 
-  // ✅ iOS FIX: stable focus scroll
+  // ✅ FIX 1: iOS scrollIntoView fix
   useEffect(() => {
     const handleFocus = (e: any) => {
-      const el = e.target
-
       setTimeout(() => {
-        el?.scrollIntoView({
+        e.target?.scrollIntoView({
           behavior: "smooth",
-          block: "center",
-          inline: "nearest"
+          block: "center"
         })
       }, 250)
     }
@@ -48,11 +46,27 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
     return () => document.removeEventListener("focusin", handleFocus)
   }, [])
 
+  // ✅ FIX 2: prevent iOS viewport jump
+  useEffect(() => {
+    const fixViewport = () => {
+      setTimeout(() => window.scrollTo(0, 0), 50)
+    }
+
+    window.addEventListener("resize", fixViewport)
+    return () => window.removeEventListener("resize", fixViewport)
+  }, [])
+
   useEffect(() => {
     if (step === 0) emailRef.current?.focus()
     if (step === 1) otpRef.current?.focus()
     if (step === 2) nameRef.current?.focus()
   }, [step])
+
+  useEffect(() => {
+    if (step !== 1 || countdown <= 0) return
+    const timer = setTimeout(() => setCountdown(countdown - 1), 1000)
+    return () => clearTimeout(timer)
+  }, [countdown, step])
 
   const handleSendOtp = async (e?: React.FormEvent) => {
     e?.preventDefault()
@@ -62,6 +76,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
     setTimeout(() => {
       setLoading(false)
       setStep(1)
+      setCountdown(60)
       toast.success('OTP sent (mock)')
     }, 800)
   }
@@ -230,19 +245,17 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
     </div>
   ) : (
     <Drawer open onOpenChange={closeModal}>
-      <DrawerContent className="flex flex-col">
+      <DrawerContent className="h-[100dvh] flex flex-col">
 
-        <DrawerHeader className="text-center shrink-0">
+        <DrawerHeader className="text-center">
           <DrawerTitle>
             {step === 0 ? 'Welcome Back' : step === 1 ? 'Check Email' : 'Complete Profile'}
           </DrawerTitle>
         </DrawerHeader>
 
-        {/* ✅ SINGLE SCROLL LAYER ONLY */}
-        <div className="flex-1 overflow-y-auto overscroll-contain px-2 pb-10">
-          <div className="max-w-md mx-auto w-full">
-            {FormContent()}
-          </div>
+        {/* ✅ FIXED SCROLL CONTAINER */}
+        <div className="flex-1 overflow-y-auto pb-10 px-2 overscroll-contain">
+          {FormContent()}
         </div>
 
       </DrawerContent>
