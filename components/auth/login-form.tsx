@@ -9,7 +9,7 @@ import { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot } from "@/comp
 import { Mail, ArrowLeft, ArrowRight, User, Phone, Loader2 } from "lucide-react"
 import { useAuthModal } from "@/context/auth-modal-context"
 import { toast } from "sonner"
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription } from "@/components/ui/drawer"
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer"
 import { useMediaQuery } from "@/hooks/use-media-query"
 import { useEffect, useRef, useState } from "react"
 import { IoLogoGoogle } from "react-icons/io5"
@@ -31,28 +31,35 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
   const otpRef = useRef<HTMLInputElement>(null)
   const nameRef = useRef<HTMLInputElement>(null)
 
-  const scrollToInput = (ref: any) => {
-    setTimeout(() => {
-      ref?.current?.scrollIntoView({
-        behavior: "smooth",
-        block: "center"
-      })
-    }, 300)
-  }
+  // ✅ FIX 1: iOS scrollIntoView fix
+  useEffect(() => {
+    const handleFocus = (e: any) => {
+      setTimeout(() => {
+        e.target?.scrollIntoView({
+          behavior: "smooth",
+          block: "center"
+        })
+      }, 250)
+    }
+
+    document.addEventListener("focusin", handleFocus)
+    return () => document.removeEventListener("focusin", handleFocus)
+  }, [])
+
+  // ✅ FIX 2: prevent iOS viewport jump
+  useEffect(() => {
+    const fixViewport = () => {
+      setTimeout(() => window.scrollTo(0, 0), 50)
+    }
+
+    window.addEventListener("resize", fixViewport)
+    return () => window.removeEventListener("resize", fixViewport)
+  }, [])
 
   useEffect(() => {
-    if (step === 0) {
-      emailRef.current?.focus()
-      scrollToInput(emailRef)
-    }
-    if (step === 1) {
-      otpRef.current?.focus()
-      scrollToInput(otpRef)
-    }
-    if (step === 2) {
-      nameRef.current?.focus()
-      scrollToInput(nameRef)
-    }
+    if (step === 0) emailRef.current?.focus()
+    if (step === 1) otpRef.current?.focus()
+    if (step === 2) nameRef.current?.focus()
   }, [step])
 
   useEffect(() => {
@@ -66,7 +73,6 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
     if (!email) return toast('Email required')
 
     setLoading(true)
-
     setTimeout(() => {
       setLoading(false)
       setStep(1)
@@ -80,7 +86,6 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
     if (!otp) return toast('Enter OTP')
 
     setLoading(true)
-
     setTimeout(() => {
       setLoading(false)
 
@@ -99,7 +104,6 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
     if (!name || !phone || !email) return toast('Fill all fields')
 
     setLoading(true)
-
     setTimeout(() => {
       setLoading(false)
       toast.success('Registered successfully (mock)')
@@ -109,7 +113,6 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
 
   const handleGoogleLogin = async () => {
     setLoadingGoogle(true)
-
     setTimeout(() => {
       setLoadingGoogle(false)
       toast.success('Google login success (mock)')
@@ -142,7 +145,13 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
               Login with OTP
             </Button>
 
-            <Button variant="outline" type="button" onClick={handleGoogleLogin} disabled={loadingGoogle} className="w-full h-11">
+            <Button
+              variant="outline"
+              type="button"
+              onClick={handleGoogleLogin}
+              disabled={loadingGoogle}
+              className="w-full h-11"
+            >
               {loadingGoogle ? <Loader2 className="animate-spin h-4 w-4 mr-2" /> : <IoLogoGoogle />}
               Continue with Google
             </Button>
@@ -227,24 +236,28 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
     <div className={cn('flex flex-col gap-6', className)} {...props}>
       <Card className="w-full max-w-md mx-auto shadow-2xl border-0 bg-muted">
         <CardHeader className="text-center">
-          <CardTitle>{step === 0 ? 'Welcome Back' : step === 1 ? 'Check Email' : 'Complete Profile'}</CardTitle>
+          <CardTitle>
+            {step === 0 ? 'Welcome Back' : step === 1 ? 'Check Email' : 'Complete Profile'}
+          </CardTitle>
         </CardHeader>
         {FormContent()}
       </Card>
     </div>
   ) : (
     <Drawer open onOpenChange={closeModal}>
-      <DrawerContent
-        className="max-h-[100dvh] overflow-hidden"
-      >
+      <DrawerContent className="h-[100dvh] flex flex-col">
+
         <DrawerHeader className="text-center">
-          <DrawerTitle>{step === 0 ? 'Welcome Back' : step === 1 ? 'Check Email' : 'Complete Profile'}</DrawerTitle>
+          <DrawerTitle>
+            {step === 0 ? 'Welcome Back' : step === 1 ? 'Check Email' : 'Complete Profile'}
+          </DrawerTitle>
         </DrawerHeader>
 
-        {/* FIX: scroll container for iOS keyboard */}
-        <div className="overflow-y-auto max-h-[calc(100dvh-120px)] px-1 pb-10">
+        {/* ✅ FIXED SCROLL CONTAINER */}
+        <div className="flex-1 overflow-y-auto pb-10 px-2 overscroll-contain">
           {FormContent()}
         </div>
+
       </DrawerContent>
     </Drawer>
   )
