@@ -5,28 +5,11 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import {
-  InputOTP,
-  InputOTPGroup,
-  InputOTPSeparator,
-  InputOTPSlot
-} from "@/components/ui/input-otp"
-import {
-  Mail,
-  ArrowLeft,
-  ArrowRight,
-  User,
-  Phone,
-  Loader2
-} from "lucide-react"
+import { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot } from "@/components/ui/input-otp"
+import { Mail, ArrowLeft, ArrowRight, User, Phone, Loader2 } from "lucide-react"
 import { useAuthModal } from "@/context/auth-modal-context"
-import {
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerDescription
-} from "@/components/ui/drawer"
+import { toast } from "sonner"
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription } from "@/components/ui/drawer"
 import { useMediaQuery } from "@/hooks/use-media-query"
 import { useEffect, useRef, useState } from "react"
 import { IoLogoGoogle } from "react-icons/io5"
@@ -39,6 +22,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
   const [phone, setPhone] = useState('')
   const [loading, setLoading] = useState(false)
   const [loadingGoogle, setLoadingGoogle] = useState(false)
+  const [countdown, setCountdown] = useState(60)
 
   const { closeModal } = useAuthModal()
   const isDesktop = useMediaQuery('(min-width: 768px)')
@@ -47,6 +31,13 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
   const otpRef = useRef<HTMLInputElement>(null)
   const nameRef = useRef<HTMLInputElement>(null)
 
+  // countdown
+  useEffect(() => {
+    if (step !== 1 || countdown <= 0) return
+    const timer = setTimeout(() => setCountdown(countdown - 1), 1000)
+    return () => clearTimeout(timer)
+  }, [countdown, step])
+
   // autofocus
   useEffect(() => {
     if (step === 0) emailRef.current?.focus()
@@ -54,100 +45,109 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
     if (step === 2) nameRef.current?.focus()
   }, [step])
 
-  // scroll focused input into view (mobile fix)
-  useEffect(() => {
-    const handler = (e: FocusEvent) => {
-      const el = e.target as HTMLElement
-      setTimeout(() => {
-        el.scrollIntoView({
-          block: "center",
-          behavior: "smooth",
-        })
-      }, 200)
-    }
-
-    document.addEventListener("focusin", handler)
-    return () => document.removeEventListener("focusin", handler)
-  }, [])
-
+  // FRONTEND ONLY: fake OTP send
   const handleSendOtp = async (e?: React.FormEvent) => {
     e?.preventDefault()
-    if (!email) return
+    if (!email) return toast('Email required')
+
     setLoading(true)
+
     setTimeout(() => {
-      setStep(1)
       setLoading(false)
-    }, 600)
+      setStep(1)
+      setCountdown(60)
+      toast.success('OTP sent (mock)')
+    }, 800)
   }
 
+  // FRONTEND ONLY: fake OTP verify
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!otp) return toast('Enter OTP')
+
     setLoading(true)
+
     setTimeout(() => {
       setLoading(false)
-      closeModal()
-    }, 600)
+
+      // fake rule: if otp is 6 digits continue else go register
+      if (otp === "123456") {
+        toast.success('Login successful (mock)')
+        closeModal()
+      } else {
+        toast('User not found (mock) → go register')
+        setStep(2)
+      }
+    }, 800)
   }
 
+  // FRONTEND ONLY: fake register
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!name || !phone || !email) return toast('Fill all fields')
+
     setLoading(true)
+
     setTimeout(() => {
       setLoading(false)
+      toast.success('Registered successfully (mock)')
       closeModal()
-    }, 600)
+    }, 1000)
   }
 
   const handleGoogleLogin = async () => {
     setLoadingGoogle(true)
-    setTimeout(() => setLoadingGoogle(false), 1000)
+
+    setTimeout(() => {
+      setLoadingGoogle(false)
+      toast.success('Google login success (mock)')
+      closeModal()
+    }, 1000)
   }
 
-  // ---------------------------
-  // Divider FIX (your issue)
-  // ---------------------------
-  const Divider = () => (
-    <div className="flex items-center gap-3 my-4">
-      <div className="h-px flex-1 bg-border" />
-      <span className="text-xs uppercase text-muted-foreground">or</span>
-      <div className="h-px flex-1 bg-border" />
-    </div>
-  )
-
   const FormContent = () => (
-    <CardContent className="pb-6">
+    <CardContent>
       {step === 0 && (
         <form onSubmit={handleSendOtp}>
           <FieldGroup>
             <Field>
-              <FieldLabel>Email</FieldLabel>
+              <FieldLabel>Email Address</FieldLabel>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
                 <Input
                   ref={emailRef}
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="pl-9 h-11"
                   type="email"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  className="pl-9 h-11"
                 />
               </div>
             </Field>
 
-            <Button className="w-full h-11" disabled={loading}>
-              {loading ? <Loader2 className="animate-spin w-4 h-4 mr-2" /> : <ArrowRight />}
+            <Button type="submit" disabled={loading} className="w-full h-11">
+              {loading ? <Loader2 className="animate-spin w-4 h-4 mr-2" /> : <ArrowRight className="w-4 h-4 mr-2" />}
               Login with OTP
             </Button>
 
-            <Divider />
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-border" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">or</span>
+              </div>
+            </div>
 
             <Button
-              type="button"
               variant="outline"
+              type="button"
               onClick={handleGoogleLogin}
+              disabled={loadingGoogle}
               className="w-full h-11"
             >
               {loadingGoogle ? (
-                <Loader2 className="animate-spin w-4 h-4 mr-2" />
+                <Loader2 className="animate-spin h-4 w-4 mr-2" />
               ) : (
                 <IoLogoGoogle />
               )}
@@ -166,9 +166,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
                   <InputOTPSlot key={i} index={i} ref={i === 0 ? otpRef : null} />
                 ))}
               </InputOTPGroup>
-
               <InputOTPSeparator />
-
               <InputOTPGroup>
                 {[3, 4, 5].map(i => (
                   <InputOTPSlot key={i} index={i} />
@@ -177,18 +175,12 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
             </InputOTP>
           </div>
 
-          <Button className="w-full mt-4" disabled={loading}>
-            {loading ? <Loader2 className="animate-spin w-4 h-4 mr-2" /> : "Verify"}
+          <Button type="submit" disabled={loading || !otp} className="w-full h-11 mt-3">
+            {loading ? <Loader2 className="animate-spin w-4 h-4 mr-2" /> : 'Verify & Continue'}
           </Button>
 
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => setStep(0)}
-            className="w-full mt-2"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
+          <Button variant="outline" type="button" onClick={() => setStep(0)} className="w-full mt-2">
+            <ArrowLeft className="w-4 h-4 mr-2" /> Back to Email
           </Button>
         </form>
       )}
@@ -197,69 +189,82 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
         <form onSubmit={handleRegister}>
           <FieldGroup>
             <Field>
-              <FieldLabel>Name</FieldLabel>
+              <FieldLabel>Full Name</FieldLabel>
               <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" />
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
                 <Input
                   ref={nameRef}
                   value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  onChange={e => setName(e.target.value)}
+                  placeholder="Enter full name"
                   className="pl-9 h-11"
                 />
               </div>
             </Field>
 
             <Field>
-              <FieldLabel>Phone</FieldLabel>
+              <FieldLabel>Phone Number</FieldLabel>
               <div className="relative">
-                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" />
+                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
                 <Input
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+                  onChange={e => setPhone(e.target.value)}
+                  placeholder="98XXXXXXXX"
                   className="pl-9 h-11"
                 />
               </div>
             </Field>
 
-            <Button className="w-full h-11" disabled={loading}>
-              {loading ? <Loader2 className="animate-spin w-4 h-4 mr-2" /> : "Complete"}
-            </Button>
+            <div className="flex gap-3 pt-2">
+              <Button type="button" variant="outline" onClick={() => setStep(1)} className="flex-1 h-11">
+                <ArrowLeft className="w-4 h-4 mr-2" /> Back
+              </Button>
+
+              <Button type="submit" disabled={loading} className="flex-1 h-11">
+                {loading ? <Loader2 className="animate-spin w-4 h-4 mr-2" /> : 'Complete Registration'}
+              </Button>
+            </div>
           </FieldGroup>
         </form>
       )}
     </CardContent>
   )
 
-  // ---------------------------
-  // Desktop
-  // ---------------------------
-  if (isDesktop) {
-    return (
-      <div className={cn("flex flex-col gap-6", className)} {...props}>
-        <Card className="w-full max-w-md mx-auto">
-          <CardHeader className="text-center">
-            <CardTitle>Login</CardTitle>
-            <CardDescription>Sign in to continue</CardDescription>
-          </CardHeader>
-          {FormContent()}
-        </Card>
-      </div>
-    )
-  }
-
-  // ---------------------------
-  // Mobile Drawer (FIXED)
-  // ---------------------------
-  return (
+  return isDesktop ? (
+    <div className={cn('flex flex-col gap-6', className)} {...props}>
+      <Card className="w-full max-w-md mx-auto shadow-2xl border-0 bg-muted">
+        <CardHeader className="text-center">
+          <CardTitle>
+            {step === 0 && 'Welcome Back'}
+            {step === 1 && 'Check Your Email'}
+            {step === 2 && 'Complete Profile'}
+          </CardTitle>
+          <CardDescription>
+            {step === 0 && 'Sign in with email or Google'}
+            {step === 1 && `Enter OTP sent to ${email}`}
+            {step === 2 && 'Complete your profile'}
+          </CardDescription>
+        </CardHeader>
+        {FormContent()}
+      </Card>
+    </div>
+  ) : (
     <Drawer open onOpenChange={closeModal}>
-      <DrawerContent className="flex flex-col">
+      <DrawerContent className="max-h-[90vh]">
         <DrawerHeader className="text-center">
-          <DrawerTitle>Login</DrawerTitle>
-          <DrawerDescription>Continue with email or Google</DrawerDescription>
+          <DrawerTitle>
+            {step === 0 ? 'Welcome Back' : step === 1 ? 'Check Email' : 'Complete Profile'}
+          </DrawerTitle>
+          <DrawerDescription>
+            {step === 0
+              ? 'Login with email or Google'
+              : step === 1
+              ? `OTP sent to ${email}`
+              : 'Fill your details'}
+          </DrawerDescription>
         </DrawerHeader>
 
-        {/* ONLY ONE SCROLL CONTAINER */}
-        <div className="flex-1 overflow-y-auto px-4 pb-32">
+        <div className="overflow-y-auto max-h-[80vh] my-8">
           {FormContent()}
         </div>
       </DrawerContent>
