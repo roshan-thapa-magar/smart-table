@@ -9,8 +9,6 @@ import { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot } from "@/comp
 import { Mail, ArrowLeft, ArrowRight, User, Phone, Loader2 } from "lucide-react"
 import { useAuthModal } from "@/context/auth-modal-context"
 import { toast } from "sonner"
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription } from "@/components/ui/drawer"
-import { useMediaQuery } from "@/hooks/use-media-query"
 import { useEffect, useRef, useState } from "react"
 import { IoLogoGoogle } from "react-icons/io5"
 
@@ -24,7 +22,6 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
   const [loadingGoogle, setLoadingGoogle] = useState(false)
   const [countdown, setCountdown] = useState(60)
   const { closeModal } = useAuthModal()
-  const isDesktop = useMediaQuery('(min-width: 768px)')
 
   const emailRef = useRef<HTMLInputElement>(null)
   const otpRef = useRef<HTMLInputElement>(null)
@@ -42,242 +39,157 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
     if (step === 2) nameRef.current?.focus()
   }, [step])
 
-  // -------------------------
-  // MOCKED BACKEND LOGIC ONLY
-  // -------------------------
+  // ---- MOCK LOGIC ----
 
-  const handleSendOtp = async (e?: React.FormEvent) => {
+  const handleSendOtp = (e?: React.FormEvent) => {
     e?.preventDefault()
     if (!email) return toast('Email required')
 
     setLoading(true)
-
     setTimeout(() => {
       setLoading(false)
       setStep(1)
       setCountdown(60)
-      toast('OTP sent successfully (mock)')
+      toast('OTP sent (mock)')
     }, 800)
   }
 
-  const handleVerifyOtp = async (e: React.FormEvent) => {
+  const handleVerifyOtp = (e: React.FormEvent) => {
     e.preventDefault()
     if (!otp) return toast('Enter OTP')
 
     setLoading(true)
-
     setTimeout(() => {
       setLoading(false)
-
-      // mock condition
       if (otp === "000000") {
         setStep(2)
-        toast('User not found (mock)')
       } else {
-        toast('Login successful (mock)')
+        toast('Login success (mock)')
         closeModal()
       }
     }, 800)
   }
 
-  const handleRegister = async (e: React.FormEvent) => {
+  const handleRegister = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!name || !phone || !email) return toast('Fill all fields')
+    if (!name || !phone) return toast('Fill all fields')
 
     setLoading(true)
-
     setTimeout(() => {
       setLoading(false)
-      toast('Registration successful (mock)')
+      toast('Registered (mock)')
       closeModal()
     }, 800)
   }
 
-  const handleGoogleLogin = async () => {
+  const handleGoogleLogin = () => {
     setLoadingGoogle(true)
-
     setTimeout(() => {
       setLoadingGoogle(false)
-      toast('Google login success (mock)')
+      toast('Google login (mock)')
       closeModal()
     }, 800)
   }
 
-  // -------------------------
-  // UI
-  // -------------------------
-
-  const FormContent = () => (
-    <CardContent>
-      {step === 0 && (
-        <form onSubmit={handleSendOtp}>
-          <FieldGroup>
-            <Field>
-              <FieldLabel>Email Address</FieldLabel>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-                <Input
-                  ref={emailRef}
-                  type="email"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  placeholder="you@example.com"
-                  className="pl-9 h-11"
-                  required
-                />
-              </div>
-            </Field>
-
-            <Button type="submit" disabled={loading} className="w-full h-11">
-              {loading ? <Loader2 className="animate-spin w-4 h-4 mr-2" /> : <ArrowRight className="w-4 h-4 mr-2" />}
-              Login with OTP
-            </Button>
-
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-border"></div>
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">or</span>
-              </div>
-            </div>
-
-            <Button
-              variant="outline"
-              type="button"
-              onClick={handleGoogleLogin}
-              disabled={loadingGoogle}
-              className="w-full h-11"
-            >
-              {loadingGoogle ? (
-                <Loader2 className="animate-spin h-4 w-4 mr-2" />
-              ) : (
-                <IoLogoGoogle />
-              )}
-              Continue with Google
-            </Button>
-          </FieldGroup>
-        </form>
-      )}
-
-      {step === 1 && (
-        <form onSubmit={handleVerifyOtp}>
-          <div className="flex justify-center">
-            <InputOTP value={otp} onChange={setOtp} maxLength={6} className="gap-2">
-              <InputOTPGroup>
-                {[0, 1, 2].map(i => (
-                  <InputOTPSlot key={i} index={i} className="w-12 h-12 text-lg font-semibold" />
-                ))}
-              </InputOTPGroup>
-              <InputOTPSeparator />
-              <InputOTPGroup>
-                {[3, 4, 5].map(i => (
-                  <InputOTPSlot key={i} index={i} className="w-12 h-12 text-lg font-semibold" />
-                ))}
-              </InputOTPGroup>
-            </InputOTP>
-          </div>
-
-          <Button type="submit" disabled={loading || !otp} className="w-full h-11 mt-3">
-            {loading ? <Loader2 className="animate-spin w-4 h-4 mr-2" /> : 'Verify & Continue'}
-          </Button>
-
-          <Button variant="outline" type="button" onClick={() => setStep(0)} className="w-full mt-2">
-            <ArrowLeft className="w-4 h-4 mr-2" /> Back to Email
-          </Button>
-        </form>
-      )}
-
-      {step === 2 && (
-        <form onSubmit={handleRegister}>
-          <FieldGroup>
-            <Field>
-              <FieldLabel>Full Name</FieldLabel>
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-                <Input
-                  ref={nameRef}
-                  value={name}
-                  onChange={e => setName(e.target.value)}
-                  placeholder="Enter full name"
-                  className="pl-9 h-11"
-                  required
-                />
-              </div>
-            </Field>
-
-            <Field>
-              <FieldLabel>Phone Number</FieldLabel>
-              <div className="relative">
-                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-                <Input
-                  value={phone}
-                  onChange={e => setPhone(e.target.value)}
-                  placeholder="98XXXXXXXX"
-                  className="pl-9 h-11"
-                  required
-                />
-              </div>
-            </Field>
-
-            <div className="flex gap-3 pt-2">
-              <Button type="button" variant="outline" onClick={() => setStep(1)} className="flex-1 h-11">
-                <ArrowLeft className="w-4 h-4 mr-2" /> Back
-              </Button>
-
-              <Button type="submit" disabled={loading} className="flex-1 h-11">
-                {loading ? <Loader2 className="animate-spin w-4 h-4 mr-2" /> : 'Complete Registration'}
-              </Button>
-            </div>
-          </FieldGroup>
-        </form>
-      )}
-    </CardContent>
-  )
-
-  if (isDesktop) {
-    return (
-      <div className={cn('flex flex-col gap-6', className)} {...props}>
-        <Card className="w-full max-w-md mx-auto shadow-2xl border-0 bg-muted">
-          <CardHeader className="space-y-2 text-center">
-            <CardTitle className="text-2xl font-bold tracking-tight">
-              {step === 0 && 'Welcome Back'}
-              {step === 1 && 'Check Your Email'}
-              {step === 2 && 'Complete Profile'}
-            </CardTitle>
-            <CardDescription className="text-sm text-muted-foreground">
-              {step === 0 && 'Sign in with email or continue with Google'}
-              {step === 1 && `We've sent a 6-digit code to ${email}`}
-              {step === 2 && 'Tell us a bit about yourself'}
-            </CardDescription>
-          </CardHeader>
-
-          {FormContent()}
-        </Card>
-      </div>
-    )
-  }
+  // ---- FORM ----
 
   return (
-    <Drawer open={true} onOpenChange={closeModal}>
-      <DrawerContent className="max-h-[90vh]">
-        <DrawerHeader className="text-center">
-          <DrawerTitle>
-            {step === 0 ? 'Welcome Back' : step === 1 ? 'Check Your Email' : 'Complete Profile'}
-          </DrawerTitle>
-          <DrawerDescription>
-            {step === 0
-              ? 'Sign in with email or continue with Google'
-              : step === 1
-              ? `We've sent a 6-digit code to ${email}`
-              : 'Tell us a bit about yourself'}
-          </DrawerDescription>
-        </DrawerHeader>
+    <div className={cn("min-h-screen flex items-center justify-center px-4", className)} {...props}>
+      <Card className="w-full max-w-md shadow-2xl border-0 bg-muted">
+        <CardHeader className="text-center space-y-2">
+          <CardTitle className="text-2xl font-bold">
+            {step === 0 && 'Welcome Back'}
+            {step === 1 && 'Check Your Email'}
+            {step === 2 && 'Complete Profile'}
+          </CardTitle>
+          <CardDescription>
+            {step === 0 && 'Sign in with email or Google'}
+            {step === 1 && `We've sent a code to ${email}`}
+            {step === 2 && 'Tell us about yourself'}
+          </CardDescription>
+        </CardHeader>
 
-        <div className="overflow-y-auto max-h-[80vh] my-8">
-          {FormContent()}
-        </div>
-      </DrawerContent>
-    </Drawer>
+        <CardContent>
+          {step === 0 && (
+            <form onSubmit={handleSendOtp}>
+              <FieldGroup>
+                <Field>
+                  <FieldLabel>Email</FieldLabel>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      ref={emailRef}
+                      value={email}
+                      onChange={e => setEmail(e.target.value)}
+                      className="pl-9 h-11"
+                      placeholder="you@example.com"
+                    />
+                  </div>
+                </Field>
+
+                <Button className="w-full h-11" disabled={loading}>
+                  {loading ? <Loader2 className="animate-spin w-4 h-4 mr-2" /> : <ArrowRight className="w-4 h-4 mr-2" />}
+                  Login with OTP
+                </Button>
+
+                <div className="relative">
+                  <div className="border-t" />
+                  <span className="absolute left-1/2 -translate-x-1/2 -top-2 bg-background px-2 text-xs text-muted-foreground">
+                    OR
+                  </span>
+                </div>
+
+                <Button variant="outline" onClick={handleGoogleLogin} className="w-full h-11">
+                  {loadingGoogle ? <Loader2 className="animate-spin w-4 h-4 mr-2" /> : <IoLogoGoogle />}
+                  Continue with Google
+                </Button>
+              </FieldGroup>
+            </form>
+          )}
+
+          {step === 1 && (
+            <form onSubmit={handleVerifyOtp}>
+              <div className="flex justify-center">
+                <InputOTP value={otp} onChange={setOtp} maxLength={6}>
+                  <InputOTPGroup>
+                    {[0, 1, 2].map(i => <InputOTPSlot key={i} index={i} />)}
+                  </InputOTPGroup>
+                  <InputOTPSeparator />
+                  <InputOTPGroup>
+                    {[3, 4, 5].map(i => <InputOTPSlot key={i} index={i} />)}
+                  </InputOTPGroup>
+                </InputOTP>
+              </div>
+
+              <Button className="w-full mt-3 h-11" disabled={loading}>
+                Verify
+              </Button>
+
+              <Button variant="outline" onClick={() => setStep(0)} className="w-full mt-2">
+                <ArrowLeft className="w-4 h-4 mr-2" /> Back
+              </Button>
+            </form>
+          )}
+
+          {step === 2 && (
+            <form onSubmit={handleRegister}>
+              <FieldGroup>
+                <Field>
+                  <FieldLabel>Name</FieldLabel>
+                  <Input value={name} onChange={e => setName(e.target.value)} />
+                </Field>
+
+                <Field>
+                  <FieldLabel>Phone</FieldLabel>
+                  <Input value={phone} onChange={e => setPhone(e.target.value)} />
+                </Field>
+
+                <Button className="w-full">Complete</Button>
+              </FieldGroup>
+            </form>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   )
 }
