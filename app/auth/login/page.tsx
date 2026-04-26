@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import {
@@ -13,16 +12,13 @@ import {
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Eye, EyeOff } from "lucide-react"
+import Link from "next/link"
 
-type Props = React.ComponentProps<"div"> & {
-  setMode?: (mode: "login" | "signup") => void
-}
-
-export function LoginForm({ className, setMode, ...props }: Props) {
+export default function Page() {
   const [showPassword, setShowPassword] = useState(false)
 
   return (
-    <div className={cn("flex flex-col gap-6", className)} {...props}>
+    <div className="flex flex-col gap-6">
       <Card className="overflow-hidden p-0">
         <CardContent>
           <form className="p-6 md:p-8">
@@ -38,15 +34,9 @@ export function LoginForm({ className, setMode, ...props }: Props) {
 
               {/* SOCIAL LOGIN */}
               <Field className="grid grid-cols-3 gap-4">
-                <Button variant="outline" type="button">
-                  Apple
-                </Button>
-                <Button variant="outline" type="button">
-                  Google
-                </Button>
-                <Button variant="outline" type="button">
-                  GitHub
-                </Button>
+                <Button variant="outline" type="button">Apple</Button>
+                <Button variant="outline" type="button">Google</Button>
+                <Button variant="outline" type="button">GitHub</Button>
               </Field>
 
               <FieldSeparator>Or continue with</FieldSeparator>
@@ -67,12 +57,12 @@ export function LoginForm({ className, setMode, ...props }: Props) {
                 <div className="flex items-center">
                   <FieldLabel htmlFor="password">Password</FieldLabel>
 
-                  <a
-                    href="#"
+                  <Link
+                    href="/auth/forgot-password"
                     className="ml-auto text-sm underline-offset-2 hover:underline"
                   >
                     Forgot password?
-                  </a>
+                  </Link>
                 </div>
 
                 <div className="relative">
@@ -84,14 +74,10 @@ export function LoginForm({ className, setMode, ...props }: Props) {
 
                   <button
                     type="button"
-                    onClick={() => setShowPassword((prev) => !prev)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2"
                   >
-                    {showPassword ? (
-                      <EyeOff size={18} />
-                    ) : (
-                      <Eye size={18} />
-                    )}
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
               </Field>
@@ -103,16 +89,12 @@ export function LoginForm({ className, setMode, ...props }: Props) {
                 </Button>
               </Field>
 
-              {/* SWITCH TO SIGNUP */}
+              {/* SIGNUP TEXT */}
               <FieldDescription className="text-center">
                 Don&apos;t have an account?{" "}
-                <button
-                  type="button"
-                  onClick={() => setMode?.("signup")}
-                  className="underline cursor-pointer"
-                >
+                <Link href="/auth/signup" className="underline">
                   Sign up
-                </button>
+                </Link>
               </FieldDescription>
 
             </FieldGroup>

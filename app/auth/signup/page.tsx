@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -18,18 +17,13 @@ import {
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Eye, EyeOff } from "lucide-react"
+import Link from "next/link"
 
-type Props = React.ComponentProps<"div"> & {
-  setMode?: (mode: "login" | "signup") => void
-}
-
-export function SignupForm({ className, setMode, ...props }: Props) {
+export default function Page() {
   const [imagePreview, setImagePreview] = useState<string | null>(null)
-
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
-  // cleanup memory leak
   useEffect(() => {
     return () => {
       if (imagePreview) {
@@ -47,7 +41,7 @@ export function SignupForm({ className, setMode, ...props }: Props) {
   }
 
   return (
-    <div className={cn("flex flex-col gap-6", className)} {...props}>
+    <div className="flex flex-col gap-6">
       <Card>
         <CardHeader className="text-center">
           <CardTitle className="text-xl">Create your account</CardTitle>
@@ -122,7 +116,6 @@ export function SignupForm({ className, setMode, ...props }: Props) {
               {/* PASSWORDS */}
               <div className="grid grid-cols-2 gap-4">
 
-                {/* PASSWORD */}
                 <Field>
                   <FieldLabel htmlFor="password">Password</FieldLabel>
                   <div className="relative">
@@ -133,19 +126,14 @@ export function SignupForm({ className, setMode, ...props }: Props) {
                     />
                     <button
                       type="button"
-                      onClick={() => setShowPassword((prev) => !prev)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2"
                     >
-                      {showPassword ? (
-                        <EyeOff size={18} />
-                      ) : (
-                        <Eye size={18} />
-                      )}
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                     </button>
                   </div>
                 </Field>
 
-                {/* CONFIRM PASSWORD */}
                 <Field>
                   <FieldLabel htmlFor="confirm-password">
                     Confirm Password
@@ -159,15 +147,11 @@ export function SignupForm({ className, setMode, ...props }: Props) {
                     <button
                       type="button"
                       onClick={() =>
-                        setShowConfirmPassword((prev) => !prev)
+                        setShowConfirmPassword(!showConfirmPassword)
                       }
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                      className="absolute right-3 top-1/2 -translate-y-1/2"
                     >
-                      {showConfirmPassword ? (
-                        <EyeOff size={18} />
-                      ) : (
-                        <Eye size={18} />
-                      )}
+                      {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                     </button>
                   </div>
                 </Field>
@@ -186,13 +170,9 @@ export function SignupForm({ className, setMode, ...props }: Props) {
 
                 <FieldDescription className="text-center">
                   Already have an account?{" "}
-                  <button
-                    type="button"
-                    onClick={() => setMode?.("login")}
-                    className="underline cursor-pointer"
-                  >
+                  <Link href="/auth/login" className="underline">
                     Sign in
-                  </button>
+                  </Link>
                 </FieldDescription>
               </Field>
 
