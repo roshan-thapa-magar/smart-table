@@ -22,8 +22,8 @@ export default function Page() {
       </section>
 
       {/* RESTAURANT LIST SECTION */}
-      <section className="w-full max-w-7xl mx-auto">
-        <div className="flex justify-between items-center py-4">
+      <section className="w-full max-w-7xl mx-auto p-4">
+        <div className="flex justify-between items-center pb-4">
           <h2 className="text-xl md:text-2xl font-bold">
             Popular Restaurants
           </h2>

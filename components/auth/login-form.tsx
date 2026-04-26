@@ -28,6 +28,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
   const emailRef = useRef<HTMLInputElement>(null)
   const otpRef = useRef<HTMLInputElement>(null)
   const nameRef = useRef<HTMLInputElement>(null)
+  const formContainerRef = useRef<HTMLDivElement>(null)
 
   // countdown for OTP resend
   useEffect(() => {
@@ -42,6 +43,55 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
     if (step === 1) otpRef.current?.focus()
     if (step === 2) nameRef.current?.focus()
   }, [step])
+
+  // Fix iOS body scroll when drawer is open
+  useEffect(() => {
+    if (!isDesktop) {
+      // Store original scroll position
+      const scrollY = window.scrollY
+      
+      // Lock body scroll
+      document.body.style.position = 'fixed'
+      document.body.style.top = `-${scrollY}px`
+      document.body.style.width = '100%'
+      document.body.style.overflow = 'hidden'
+      
+      return () => {
+        // Restore scroll position
+        document.body.style.position = ''
+        document.body.style.top = ''
+        document.body.style.width = ''
+        document.body.style.overflow = ''
+        window.scrollTo(0, scrollY)
+      }
+    }
+  }, [isDesktop])
+
+  // Handle input focus with smooth scrolling
+  const handleInputFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    // Small delay to let keyboard start opening
+    setTimeout(() => {
+      const inputElement = e.target
+      const container = formContainerRef.current
+      
+      if (container) {
+        // Calculate position to scroll to
+        const inputRect = inputElement.getBoundingClientRect()
+        const containerRect = container.getBoundingClientRect()
+        const scrollOffset = inputRect.top - containerRect.top - 60 // 60px padding from top
+        
+        container.scrollTo({
+          top: container.scrollTop + scrollOffset,
+          behavior: 'smooth'
+        })
+      } else {
+        inputElement.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center',
+        })
+      }
+    }, 100)
+  }
 
   const handleSendOtp = async (e?: React.FormEvent) => {
     e?.preventDefault()
@@ -89,29 +139,71 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
     }
   }
 
+  // Input field with fixed iOS styles
+  const EmailInput = () => (
+    <div className="relative">
+      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+      <Input
+        ref={emailRef}
+        type="email"
+        value={email}
+        onChange={e => setEmail(e.target.value)}
+        placeholder="you@example.com"
+        className="pl-9 h-11"
+        style={{ fontSize: '16px' }} // Prevents iOS zoom
+        onFocus={handleInputFocus}
+        autoComplete="email"
+        required
+      />
+    </div>
+  )
+
+  const NameInput = () => (
+    <div className="relative">
+      <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+      <Input
+        ref={nameRef}
+        value={name}
+        onChange={e => setName(e.target.value)}
+        placeholder="Enter full name"
+        className="pl-9 h-11"
+        style={{ fontSize: '16px' }} // Prevents iOS zoom
+        onFocus={handleInputFocus}
+        autoComplete="name"
+        required
+      />
+    </div>
+  )
+
+  const PhoneInput = () => (
+    <div className="relative">
+      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+      <Input
+        value={phone}
+        onChange={e => setPhone(e.target.value)}
+        placeholder="98XXXXXXXX"
+        className="pl-9 h-11"
+        style={{ fontSize: '16px' }} // Prevents iOS zoom
+        onFocus={handleInputFocus}
+        autoComplete="tel"
+        type="tel"
+        required
+      />
+    </div>
+  )
+
   // single form rendering function
   const FormContent = () => (
-    <>
-      <CardContent >
+    <div ref={formContainerRef} className="w-full">
+      <CardContent className="p-6">
         {step === 0 && (
-          <form onSubmit={handleSendOtp}>
-            <FieldGroup>
+          <form onSubmit={handleSendOtp} className="space-y-4">
+            <FieldGroup className="space-y-4">
               <Field>
-                <FieldLabel>Email Address</FieldLabel>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-                  <Input
-                    ref={emailRef}
-                    type="email"
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
-                    placeholder="you@example.com"
-                    className="pl-9 h-11"
-                    required
-                  />
-                </div>
+                <FieldLabel className="text-sm font-medium">Email Address</FieldLabel>
+                <EmailInput />
               </Field>
-              <Button type="submit" disabled={loading} className="w-full h-11">
+              <Button type="submit" disabled={loading} className="w-full h-11 text-base">
                 {loading ? <Loader2 className="animate-spin w-4 h-4 mr-2" /> : <ArrowRight className="w-4 h-4 mr-2" />}
                 Login with OTP
               </Button>
@@ -123,10 +215,11 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
                   <span className="bg-background px-2 text-muted-foreground">or</span>
                 </div>
               </div>
-              <Button variant="outline" type="button" onClick={handleGoogleLogin} disabled={loadingGoogle} className="w-full h-11">
+              <Button variant="outline" type="button" onClick={handleGoogleLogin} disabled={loadingGoogle} className="w-full h-11 text-base">
                 {loadingGoogle ? (
                   <Loader2 className="animate-spin h-4 w-4 mr-2" />
-                ) : (<IoLogoGoogle />
+                ) : (
+                  <IoLogoGoogle className="w-5 h-5 mr-2" />
                 )}
                 Continue with Google
               </Button>
@@ -135,49 +228,68 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
         )}
 
         {step === 1 && (
-          <form onSubmit={handleVerifyOtp}>
-            <div className="flex justify-center">
-              <InputOTP value={otp} onChange={setOtp} maxLength={6} className="gap-2">
+          <form onSubmit={handleVerifyOtp} className="space-y-4">
+            <div className="flex justify-center py-4">
+              <InputOTP 
+                value={otp} 
+                onChange={setOtp} 
+                maxLength={6} 
+                className="gap-2"
+                onFocus={handleInputFocus as any}
+              >
                 <InputOTPGroup>
-                  {[0, 1, 2].map(i => <InputOTPSlot key={i} index={i} className="w-12 h-12 text-lg font-semibold" ref={i === 0 ? otpRef : null} />)}
+                  {[0, 1, 2].map(i => (
+                    <InputOTPSlot 
+                      key={i} 
+                      index={i} 
+                      className="w-12 h-12 text-lg font-semibold"
+                      style={{ fontSize: '20px' }} // Prevents iOS zoom
+                    />
+                  ))}
                 </InputOTPGroup>
                 <InputOTPSeparator />
                 <InputOTPGroup>
-                  {[3, 4, 5].map(i => <InputOTPSlot key={i} index={i} className="w-12 h-12 text-lg font-semibold" />)}
+                  {[3, 4, 5].map(i => (
+                    <InputOTPSlot 
+                      key={i} 
+                      index={i} 
+                      className="w-12 h-12 text-lg font-semibold"
+                      style={{ fontSize: '20px' }} // Prevents iOS zoom
+                    />
+                  ))}
                 </InputOTPGroup>
               </InputOTP>
             </div>
-            <Button type="submit" disabled={loading || !otp} className="w-full h-11 mt-3">
+            <Button type="submit" disabled={loading || !otp} className="w-full h-11 text-base mt-2">
               {loading ? <Loader2 className="animate-spin w-4 h-4 mr-2" /> : 'Verify & Continue'}
             </Button>
-            <Button variant="outline" type="button" onClick={() => setStep(0)} className="w-full mt-2">
+            <Button 
+              variant="outline" 
+              type="button" 
+              onClick={() => setStep(0)} 
+              className="w-full h-11 text-base"
+            >
               <ArrowLeft className="w-4 h-4 mr-2" /> Back to Email
             </Button>
           </form>
         )}
 
         {step === 2 && (
-          <form onSubmit={handleRegister}>
-            <FieldGroup>
+          <form onSubmit={handleRegister} className="space-y-4">
+            <FieldGroup className="space-y-4">
               <Field>
-                <FieldLabel>Full Name</FieldLabel>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-                  <Input ref={nameRef} value={name} onChange={e => setName(e.target.value)} placeholder="Enter full name" className="pl-9 h-11" required />
-                </div>
+                <FieldLabel className="text-sm font-medium">Full Name</FieldLabel>
+                <NameInput />
               </Field>
               <Field>
-                <FieldLabel>Phone Number</FieldLabel>
-                <div className="relative">
-                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-                  <Input value={phone} onChange={e => setPhone(e.target.value)} placeholder="98XXXXXXXX" className="pl-9 h-11" required />
-                </div>
+                <FieldLabel className="text-sm font-medium">Phone Number</FieldLabel>
+                <PhoneInput />
               </Field>
               <div className="flex gap-3 pt-2">
-                <Button type="button" variant="outline" onClick={() => setStep(1)} className="flex-1 h-11">
+                <Button type="button" variant="outline" onClick={() => setStep(1)} className="flex-1 h-11 text-base">
                   <ArrowLeft className="w-4 h-4 mr-2" /> Back
                 </Button>
-                <Button type="submit" disabled={loading} className="flex-1 h-11">
+                <Button type="submit" disabled={loading} className="flex-1 h-11 text-base">
                   {loading ? <Loader2 className="animate-spin w-4 h-4 mr-2" /> : 'Complete Registration'}
                 </Button>
               </div>
@@ -185,14 +297,15 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
           </form>
         )}
       </CardContent>
-    </>
+    </div>
   )
 
+  // Desktop view
   if (isDesktop) {
     return (
       <div className={cn('flex flex-col gap-6', className)} {...props}>
         <Card className="w-full max-w-md mx-auto shadow-2xl border-0 bg-muted">
-          <CardHeader className="space-y-2 text-center">
+          <CardHeader className="space-y-2 text-center pb-4">
             <CardTitle className="text-2xl font-bold tracking-tight">
               {step === 0 && 'Welcome Back'}
               {step === 1 && 'Check Your Email'}
@@ -210,16 +323,33 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
     )
   }
 
+  // Mobile view (Drawer) with iOS fixes
   return (
     <Drawer open={true} onOpenChange={closeModal}>
-      <DrawerContent className="max-h-[90vh]">
-        <DrawerHeader className="text-center">
-          <DrawerTitle>{step === 0 ? 'Welcome Back' : step === 1 ? 'Check Your Email' : 'Complete Profile'}</DrawerTitle>
-          <DrawerDescription>
+      <DrawerContent 
+        className="max-h-[90vh] rounded-t-3xl"
+        style={{
+          transform: 'translateZ(0)', // Force GPU acceleration
+          WebkitOverflowScrolling: 'touch',
+        }}
+      >
+        <DrawerHeader className="text-center pt-6 pb-2">
+          <DrawerTitle className="text-xl font-bold">
+            {step === 0 ? 'Welcome Back' : step === 1 ? 'Check Your Email' : 'Complete Profile'}
+          </DrawerTitle>
+          <DrawerDescription className="text-sm text-muted-foreground mt-1">
             {step === 0 ? 'Sign in with email or continue with Google' : step === 1 ? `We've sent a 6-digit code to ${email}` : 'Tell us a bit about yourself'}
           </DrawerDescription>
         </DrawerHeader>
-        <div className="overflow-y-auto max-h-[80vh] my-8">{FormContent()}</div>
+        <div 
+          className="overflow-y-auto max-h-[70vh] pb-6"
+          style={{
+            WebkitOverflowScrolling: 'touch',
+            overscrollBehavior: 'contain',
+          }}
+        >
+          {FormContent()}
+        </div>
       </DrawerContent>
     </Drawer>
   )
