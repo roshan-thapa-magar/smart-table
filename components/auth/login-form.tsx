@@ -2,7 +2,7 @@
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot } from "@/components/ui/input-otp"
@@ -22,7 +22,6 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
   const [phone, setPhone] = useState('')
   const [loading, setLoading] = useState(false)
   const [loadingGoogle, setLoadingGoogle] = useState(false)
-  const [countdown, setCountdown] = useState(60)
 
   const { closeModal } = useAuthModal()
   const isDesktop = useMediaQuery('(min-width: 768px)')
@@ -31,13 +30,16 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
   const otpRef = useRef<HTMLInputElement>(null)
   const nameRef = useRef<HTMLInputElement>(null)
 
-  // ✅ FIX 1: iOS scrollIntoView fix
+  // ✅ REAL iOS keyboard safe focus handler
   useEffect(() => {
     const handleFocus = (e: any) => {
+      const el = e.target
+
       setTimeout(() => {
-        e.target?.scrollIntoView({
+        el?.scrollIntoView({
           behavior: "smooth",
-          block: "center"
+          block: "center",
+          inline: "nearest"
         })
       }, 250)
     }
@@ -46,44 +48,30 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
     return () => document.removeEventListener("focusin", handleFocus)
   }, [])
 
-  // ✅ FIX 2: prevent iOS viewport jump
-  useEffect(() => {
-    const fixViewport = () => {
-      setTimeout(() => window.scrollTo(0, 0), 50)
-    }
-
-    window.addEventListener("resize", fixViewport)
-    return () => window.removeEventListener("resize", fixViewport)
-  }, [])
-
+  // autofocus per step
   useEffect(() => {
     if (step === 0) emailRef.current?.focus()
     if (step === 1) otpRef.current?.focus()
     if (step === 2) nameRef.current?.focus()
   }, [step])
 
-  useEffect(() => {
-    if (step !== 1 || countdown <= 0) return
-    const timer = setTimeout(() => setCountdown(countdown - 1), 1000)
-    return () => clearTimeout(timer)
-  }, [countdown, step])
+  // ---------------- HANDLERS ----------------
 
   const handleSendOtp = async (e?: React.FormEvent) => {
     e?.preventDefault()
-    if (!email) return toast('Email required')
+    if (!email) return toast.error('Email required')
 
     setLoading(true)
     setTimeout(() => {
       setLoading(false)
       setStep(1)
-      setCountdown(60)
       toast.success('OTP sent (mock)')
     }, 800)
   }
 
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!otp) return toast('Enter OTP')
+    if (!otp) return toast.error('Enter OTP')
 
     setLoading(true)
     setTimeout(() => {
@@ -93,7 +81,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
         toast.success('Login successful (mock)')
         closeModal()
       } else {
-        toast('User not found (mock) → go register')
+        toast.error('User not found → register')
         setStep(2)
       }
     }, 800)
@@ -101,7 +89,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!name || !phone || !email) return toast('Fill all fields')
+    if (!name || !phone || !email) return toast.error('Fill all fields')
 
     setLoading(true)
     setTimeout(() => {
@@ -120,15 +108,17 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
     }, 1000)
   }
 
+  // ---------------- FORM UI ----------------
+
   const FormContent = () => (
-    <CardContent>
+    <CardContent className="space-y-5">
       {step === 0 && (
-        <form onSubmit={handleSendOtp}>
+        <form onSubmit={handleSendOtp} className="space-y-4">
           <FieldGroup>
             <Field>
               <FieldLabel>Email Address</FieldLabel>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
                   ref={emailRef}
                   type="email"
@@ -146,13 +136,13 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
             </Button>
 
             <Button
-              variant="outline"
               type="button"
+              variant="outline"
               onClick={handleGoogleLogin}
               disabled={loadingGoogle}
               className="w-full h-11"
             >
-              {loadingGoogle ? <Loader2 className="animate-spin h-4 w-4 mr-2" /> : <IoLogoGoogle />}
+              {loadingGoogle ? <Loader2 className="animate-spin w-4 h-4 mr-2" /> : <IoLogoGoogle />}
               Continue with Google
             </Button>
           </FieldGroup>
@@ -160,7 +150,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
       )}
 
       {step === 1 && (
-        <form onSubmit={handleVerifyOtp}>
+        <form onSubmit={handleVerifyOtp} className="space-y-4">
           <div className="flex justify-center">
             <InputOTP value={otp} onChange={setOtp} maxLength={6}>
               <InputOTPGroup>
@@ -177,23 +167,23 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
             </InputOTP>
           </div>
 
-          <Button type="submit" disabled={loading || !otp} className="w-full h-11 mt-3">
+          <Button type="submit" disabled={loading} className="w-full h-11">
             {loading ? <Loader2 className="animate-spin w-4 h-4 mr-2" /> : 'Verify & Continue'}
           </Button>
 
-          <Button variant="outline" type="button" onClick={() => setStep(0)} className="w-full mt-2">
+          <Button type="button" variant="outline" onClick={() => setStep(0)} className="w-full">
             <ArrowLeft className="w-4 h-4 mr-2" /> Back
           </Button>
         </form>
       )}
 
       {step === 2 && (
-        <form onSubmit={handleRegister}>
+        <form onSubmit={handleRegister} className="space-y-4">
           <FieldGroup>
             <Field>
               <FieldLabel>Full Name</FieldLabel>
               <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
                   ref={nameRef}
                   value={name}
@@ -207,7 +197,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
             <Field>
               <FieldLabel>Phone Number</FieldLabel>
               <div className="relative">
-                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
                   value={phone}
                   onChange={e => setPhone(e.target.value)}
@@ -232,6 +222,8 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
     </CardContent>
   )
 
+  // ---------------- RENDER ----------------
+
   return isDesktop ? (
     <div className={cn('flex flex-col gap-6', className)} {...props}>
       <Card className="w-full max-w-md mx-auto shadow-2xl border-0 bg-muted">
@@ -245,17 +237,20 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
     </div>
   ) : (
     <Drawer open onOpenChange={closeModal}>
-      <DrawerContent className="h-[50dvh] flex flex-col">
+      <DrawerContent className="flex flex-col max-h-[90vh]">
 
-        <DrawerHeader className="text-center">
+        {/* HEADER (fixed) */}
+        <DrawerHeader className="shrink-0 text-center">
           <DrawerTitle>
             {step === 0 ? 'Welcome Back' : step === 1 ? 'Check Email' : 'Complete Profile'}
           </DrawerTitle>
         </DrawerHeader>
 
-        {/* ✅ FIXED SCROLL CONTAINER */}
-        <div className="flex-1 overflow-y-auto pb-10 px-2 overscroll-contain">
-          {FormContent()}
+        {/* SCROLL AREA (ONLY ONE) */}
+        <div className="flex-1 overflow-y-auto overscroll-contain px-2 pb-10">
+          <div className="max-w-md mx-auto w-full">
+            {FormContent()}
+          </div>
         </div>
 
       </DrawerContent>
