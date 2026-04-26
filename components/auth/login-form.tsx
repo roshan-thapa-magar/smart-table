@@ -245,7 +245,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
     </div>
   ) : (
     <Drawer open onOpenChange={closeModal}>
-      <DrawerContent className="h-[100dvh] flex flex-col">
+      <DrawerContent className="max-h-[100dvh] flex flex-col">
 
         <DrawerHeader className="text-center">
           <DrawerTitle>
